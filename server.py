@@ -44,7 +44,6 @@ def status_cont(cont_id: int | None = None):
         return results
 
 
-
 @app.delete("/cont/delete/{cont_id}", name="Eliminar contenedor",
             description="Elimina un contenedor, incluyendo todas sus señales y configuraciones.\n"
                         "Mucho cuidado usando esto.")
@@ -63,23 +62,20 @@ def delete_cont(cont_id: int | None = None):
          description="Actualiza un contenedor en particular. Los datos que se pueden cambiar son:\n"
                      "- Vincular a un cliente nuevo\n"
                      "- Actualizar el nombre\n"
-                     "- Actualizar el valor aceptable de defrost\n"
-                     "- Limpiar historial")
+                     "- Limpiar historial de señales")
 def update_cont(
         cont_id: int | None = None,
         client_id: int | None = None,
         display_name: str | None = None,
-        update_defrost: int | None = None,
         clear_history: bool | None = False
 ):
     if cont_id:
         if client_id:
-            assign_request = dbRequests.assign_cont(client_id, cont_id, display_name, update_defrost)
+            assign_request = dbRequests.assign_cont(client_id, cont_id, display_name)
             if assign_request == -1:
                 raise HTTPException(status_code=400, detail="El cliente ya tiene asignado ese contenedor.")
-        else:
-            if display_name or update_defrost:
-                assign_request = dbRequests.name_cont(cont_id, display_name, update_defrost)
+            if display_name:
+                assign_request = dbRequests.name_cont(cont_id, client_id, display_name)
                 if assign_request == 0:
                     raise HTTPException(status_code=404, detail="No se encontró el contenedor.")
         if clear_history:
