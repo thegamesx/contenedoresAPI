@@ -7,11 +7,6 @@ import dbRequests
 app = FastAPI()
 
 """
-class Item(BaseModel):
-    name: str
-    price: float
-    is_offer: Union[bool, None] = None
-
 
 @app.get("/")
 def read_root():
@@ -32,6 +27,22 @@ def update_item(item_id: int, item: Item):
 # Mi codigo, borrar lo de arriba luego
 
 # CONTENEDORES
+
+class Container(BaseModel):
+    cont_id: int
+    name: str
+    temp: float
+    compresor: bool
+    evaporacion: bool
+    defrost: bool
+    arranque_comp: bool
+    bateria: bool
+    alarma: bool
+    defrost_status: bool
+
+
+class ContainerList(BaseModel):
+    contList: list[Container] = []
 
 @app.get("/cont/status/{cont_id}", name="Estado contenedor",
          description="Devuelve el estado de un contenedor especifico. Normalmente se usa el de clientes, "
@@ -87,17 +98,31 @@ def update_cont(
         return {"status": "Se debe ingresar el id de un contenedor."}
 
 
-@app.get("/cont/status/{client_id}", name="Estado contenedores de un cliente",
+@app.get("/client/status/{client_id}", name="Estado contenedores de un cliente",
          description="Devuelve el estado de todos los contenedores de un cliente.")
 def get_status(client_id: int):
-    contStatus = dbRequests.contStatus(client_id)
-    print(contStatus)
-    return {"client_id": client_id}  # Acomodar el dict con los datos. Hacer pruebas
+    contStatus = dbRequests.status_cont_client(client_id)
+    results = ContainerList()
+    for i, container in enumerate(contStatus):
+        currentContainer = Container(
+            cont_id=container["id"],
+            name=container["name"],
+            temp=container["temp"],
+            compresor=container["compresor"],
+            evaporacion=container["evaporacion"],
+            defrost=container["defrost"],
+            arranque_comp=container["arranque_comp"],
+            bateria=container["bateria"],
+            alarma=container["alarma"],
+            defrost_status=container["defrost_status"],
+        )
+        results.contList.append(currentContainer)
+    return {"status": results}
 
 
 # Asignar permisos de admin para usar este comando. Crea clientes nuevos
 @app.post("/client/create/", name="Crear cliente",
           description="Crea un cliente nuevo. Requiere ingresar un nombre y permisos de admin.")
 def create_client(client_name: Annotated[str, Query(min_length=1)]):
-    response = dbRequests.createClient(client_name)
+    response = dbRequests.createClient(client_name, 1)
     return {"status": client_name}
