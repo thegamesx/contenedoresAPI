@@ -2,7 +2,7 @@ import json
 from supabase import Client, create_client
 from datetime import datetime
 
-defrost_default = 60  # Preguntar si está bien
+defrost_default = 60
 
 
 # Código para conectarme a la DB
@@ -32,7 +32,7 @@ def delete_last_signals(cont_id):
 
 def del_cont(contID):
     db = connect()
-    data, count = db.table("container").delete(count='exact').eq("following_signal_id", contID).execute()
+    data, count = db.table("container").delete(count='exact').eq("following_cont_id", contID).execute()
     history_cleared = clear_history(contID)
     return [count[1], history_cleared]
 
@@ -41,8 +41,26 @@ def del_cont(contID):
 # Mucho cuidado con usar este comando, ya que no reversible
 def clear_history(contID):
     db = connect()
-    data, count = db.table("signals").delete(count='exact').eq("idvigia", contID).execute()
+    data, count = db.table("config").select("signal_id", count='exact').eq("container_id", contID).execute()
+    signal = data[1][0]["signal_id"]
+    data, count = db.table("signals").delete(count='exact').eq("idvigia", signal).execute()
     return count[1]
+
+
+def link_cont_to_client(contID, clientID):
+    db = connect()
+    client = return_client(clientID)
+    followedID = client["id"]
+    data, count = (db.table("config").
+                   select("*", count='exact').
+                   eq("container_id", contID).
+                   execute())
+    followingID = data[1][0]["id"]
+    data, count = db.table("relation").insert({
+        "following_cont_id": followingID,
+        "followed_user_id": followedID,
+    }).execute()
+    return data
 
 
 # Ingresa un contenedor al sistema, creando todas las relaciones necesarias. Es necesario asignar un cliente como minimo
@@ -51,44 +69,28 @@ def new_cont(clientID, contID, name):
     db = connect()
     # Primero nos fijamos si el contenedor ya existe
     data, count = db.table("config").select("*", count='exact').eq("container_id", contID).execute()
-    if count > 0:
-        return {"error": "El contenedor ingresado ya existe."}
+    if count[1] > 0:
+        return -1
     # Verificamos que el cliente existe, sino no vamos a poder asignar el contenedor
-    data, count = db.table("client").select("*", count='exact').eq("user_id", clientID).execute()
-    if count == 0:
-        return {"error": "No existe el cliente. Ingrese un cliente válido."}
+    client = return_client(clientID)
+    if client == -1:
+        return -2
     data, count = db.table("config").insert({
         "container_id": contID,
         "display_name": name if name else "Sin nombre",
         "signal_id": contID  # Ver si cambiar esto
     }).execute()
-    followingID = data["id"]
-    data, count = db.table("client").select("id", count='exact').eq("user_id", clientID).execute()
-    followedID = data["id"]
-    data, count = db.table("relation").insert({
-        "following_signal_id": followingID,
-        "followed_user_id": followedID,
-    }).execute()
+    link_cont_to_client(contID, clientID)
     return data
 
 
 # Vincula a un cliente con un contenedor.
 # TODO: Testear
 def assign_cont(clientID, contID, name):
-    db = connect()
-    exists = db.table("container").select("*", count='exact').eq("followed_user_id", clientID).eq("following_signal_id",
-                                                                                                  contID).execute()
-    if exists.count == 0:
-        data, count = (db.table("container")
-                       .insert({
-            "followed_user_id": clientID,
-            "following_signal_id": contID,
-            "display_name": name if name else "Sin nombre",
-            "defrost_timer": defrost_default})  # Ver aca
-                       .execute())
-    else:
-        return -1
-    return data
+    result = new_cont(clientID, contID, name)
+    if result == -1:
+        result = link_cont_to_client(contID,clientID)
+    return result
 
 
 # Cambia el nombre de un contenedor
@@ -155,24 +157,48 @@ def cont_status(containerID, connectionEstablished=False):
     if count[1] == 0:
         return -1
     else:
-        data = data[1][0]
+        status = data[1][0]
         alarma = defrost = False
-        # TODO: Programar el warning
-        if controller_status(data["date"]):
+        if controller_status(status["date"]):
             alarma = True
-        if not data["defrost"]:
+        if not status["defrost"]:
             defrost_status = check_defrost_status(containerID, db)
             if defrost_status:
                 alarma = True
-        if data["bateria"] or not data["compresor"] or not data["evaporacion"]:
+            else:
+                defrost = True
+        if status["bateria"] or not status["compresor"] or not status["evaporacion"]:
             alarma = True
-        data["alarma"] = alarma
-        data["defrost_status"] = defrost
-        return data
+        status["alarma"] = alarma
+        status["defrost_status"] = defrost
+        data, count = (db.table("config").
+                       select("*", count='exact').
+                       eq("container_id", containerID).
+                       execute())
+        status["name"] = data[1][0]["display_name"]
+        status["id"] = containerID
+        return status
+
+
+# Se fija que clientes están asignado a un contenedor en particular
+def cont_assigned(contID):
+    db = connect()
+    data, count = (db.table("config").
+                   select("relation(*)", count='exact').
+                   eq("container_id", contID).
+                   execute())
+    clientList = []
+    for client in data[1][0]['relation']:
+        data, count = (db.table("relation").
+                       select("client(*)", count='exact').
+                       eq("followed_user_id", client['followed_user_id']).
+                       execute())
+        clientList.append(data[1][0]['client'])
+    return clientList
 
 
 # Devuelve el estados de todos los contenedores asignados a una cuenta
-# TODO: Testear con multiples contenedores
+# TODO: Programar errores, que pasa si no existe el cliente o si no tiene contenedores asignados
 def status_cont_client(clientID):
     db = connect()
     data, count = (db.table("client").
@@ -180,20 +206,31 @@ def status_cont_client(clientID):
                    eq("user_id", clientID).
                    execute())
     all_cont_status = []
-    for row in data[1]:
+    for row in data[1][0]['relation']:
         data, count = (db.table("config").
                        select("*", count='exact').
-                       eq("id", row['relation']["following_signal_id"]).
+                       eq("id", row["following_cont_id"]).
                        execute())
         status = cont_status(data[1][0]['signal_id'])
-        status["name"] = data[1][0]["display_name"]
-        status["id"] = data[1][0]["container_id"]
         all_cont_status.append(status)
     return all_cont_status
 
 
-# Crea un cliente. Revisar luego de ver los permisos y el auth
-def createClient(name, id):
+# Devuelve los datos de un cliente a traves de su ID
+def return_client(clientID):
     db = connect()
-    data, count = db.table("client").insert({"title": name, "user_id": id}).execute()  # ver como asignar las id
+    data, count = (db.table("client").
+                   select("*", count='exact').
+                   eq("user_id", clientID).
+                   execute())
+    if count[1] == 0:
+        return -1
+    else:
+        return data[1][0]
+
+
+# Crea un cliente. Revisar luego de ver los permisos y el auth
+def create_new_client(name, clientID):
+    db = connect()
+    data, count = db.table("client").insert({"title": name, "user_id": clientID}).execute()  # ver como asignar las id
     return data

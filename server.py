@@ -4,29 +4,20 @@ from typing_extensions import Annotated
 from pydantic import BaseModel
 import dbRequests
 
-app = FastAPI()
+tags_metadata = [
+    {
+        "name": "Container",
+    },
+    {
+        "name": "Client"
+    }
+]
 
-"""
+app = FastAPI(openapi_tags=tags_metadata)
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q": q}
-
-
-@app.put("/items/{item_id}")
-def update_item(item_id: int, item: Item):
-    return {"item_name": item.name, "item_id": item_id}
-"""
-
-
-# Mi codigo, borrar lo de arriba luego
 
 # CONTENEDORES
+
 
 class Container(BaseModel):
     cont_id: int
@@ -41,21 +32,69 @@ class Container(BaseModel):
     defrost_status: bool
 
 
+class Client(BaseModel):
+    name: str
+    id: int
+
+
 class ContainerList(BaseModel):
     contList: list[Container] = []
 
-@app.get("/cont/status/{cont_id}", name="Estado contenedor",
+
+class ContStatus(BaseModel):
+    status: Container
+    clients: list[Client] = []
+
+
+@app.post("/cont/create/{cont_id}", name="Crear contenedor", tags=["Container"],
+          description="Crea todas las relaciones de un contenedor. Debe proveerse un cliente para vincular, "
+                      "pero luego se pueden vincular nuevos o modificarlos.")
+def create_cont(cont_id: int | None = None, client_id: int | None = None, name: str | None = None):
+    # Primero nos fijamos si el cliente existe
+    response = dbRequests.new_cont(client_id, cont_id, name)
+    if response == -1:
+        raise HTTPException(status_code=400, detail="El contenedor ingresado ya existe.")
+    if response == -2:
+        raise HTTPException(status_code=404, detail="No se encontró el cliente")
+    return {"status": "El contenedor fue creado con éxito."}
+
+
+@app.get("/cont/status/{cont_id}", name="Estado contenedor", tags=["Container"],
          description="Devuelve el estado de un contenedor especifico. Normalmente se usa el de clientes, "
-                     "pero si se necesita solo ver el estado de un contenedor especifico se puede usar este.")
+                     "pero si se necesita solo ver el estado de un contenedor especifico se puede usar este.\n"
+                     "También sirve para ver que clientes tiene asociado.")
 def status_cont(cont_id: int | None = None):
-    results = dbRequests.cont_status(cont_id)
-    if results == -1:
+    status = dbRequests.cont_status(cont_id)
+    if status == -1:
         raise HTTPException(status_code=404, detail="No se encontró el contenedor")
-    else:
-        return results
+    clients = dbRequests.cont_assigned(status["idvigia"])
+    # Ver que pasa si el contenedor no tiene clientes asignados.
+    contStatus = Container(
+            cont_id=status["id"],
+            name=status["name"],
+            temp=status["temp"],
+            compresor=status["compresor"],
+            evaporacion=status["evaporacion"],
+            defrost=status["defrost"],
+            arranque_comp=status["arranque_comp"],
+            bateria=status["bateria"],
+            alarma=status["alarma"],
+            defrost_status=status["defrost_status"],
+        )
+    clientList = []
+    for client in clients:
+        clientList.append(Client(
+            name=client["title"],
+            id=client["user_id"]
+        ))
+    result = ContStatus(
+        status=contStatus,
+        clients=clientList
+    )
+    return result
 
 
-@app.delete("/cont/delete/{cont_id}", name="Eliminar contenedor",
+@app.delete("/cont/delete/{cont_id}", name="Eliminar contenedor", tags=["Container"],
             description="Elimina un contenedor, incluyendo todas sus señales y configuraciones.\n"
                         "Mucho cuidado usando esto.")
 def delete_cont(cont_id: int | None = None):
@@ -69,7 +108,7 @@ def delete_cont(cont_id: int | None = None):
         raise HTTPException(status_code=400, detail="No se ingresó un numero de contenedor")
 
 
-@app.put("/cont/update/", name="Modificar contenedor",
+@app.put("/cont/update/", name="Modificar contenedor", tags=["Container"],
          description="Actualiza un contenedor en particular. Los datos que se pueden cambiar son:\n"
                      "- Vincular a un cliente nuevo\n"
                      "- Actualizar el nombre\n"
@@ -80,25 +119,30 @@ def update_cont(
         display_name: str | None = None,
         clear_history: bool | None = False
 ):
+    assign_request = {}
     if cont_id:
         if client_id:
-            assign_request = dbRequests.assign_cont(client_id, cont_id, display_name)
-            if assign_request == -1:
+            assign_request["link_status"] = dbRequests.assign_cont(client_id, cont_id, display_name)
+            if assign_request["link_status"] == -1:
                 raise HTTPException(status_code=400, detail="El cliente ya tiene asignado ese contenedor.")
-            if display_name:
-                assign_request = dbRequests.name_cont(cont_id, client_id, display_name)
-                if assign_request == 0:
-                    raise HTTPException(status_code=404, detail="No se encontró el contenedor.")
+        if display_name:
+            assign_request["name_status"] = dbRequests.name_cont(cont_id, display_name)
+            if assign_request["name_status"] == 0:
+                raise HTTPException(status_code=404, detail="No se encontró el contenedor.")
+            if assign_request["name_status"] == -1:
+                raise HTTPException(status_code=422,
+                                    detail="Ocurrió un error inesperado. Contacte al administrador del sistema.")
         if clear_history:
-            assign_request = dbRequests.clear_history(cont_id)
-            return {"rows_deleted": assign_request}  # Cambiar como se devuelve el estado
-
-
+            assign_request["history_rows_deleted"] = dbRequests.clear_history(cont_id)
+        if assign_request == {}:
+            raise HTTPException(status_code=400, detail="No se realizaron cambios, revise los datos ingresados.")
+        else:
+            return assign_request
     else:
         return {"status": "Se debe ingresar el id de un contenedor."}
 
 
-@app.get("/client/status/{client_id}", name="Estado contenedores de un cliente",
+@app.get("/client/status/{client_id}", name="Estado contenedores de un cliente", tags=["Client"],
          description="Devuelve el estado de todos los contenedores de un cliente.")
 def get_status(client_id: int):
     contStatus = dbRequests.status_cont_client(client_id)
@@ -121,8 +165,9 @@ def get_status(client_id: int):
 
 
 # Asignar permisos de admin para usar este comando. Crea clientes nuevos
-@app.post("/client/create/", name="Crear cliente",
-          description="Crea un cliente nuevo. Requiere ingresar un nombre y permisos de admin.")
-def create_client(client_name: Annotated[str, Query(min_length=1)]):
-    response = dbRequests.createClient(client_name, 1)
-    return {"status": client_name}
+@app.post("/client/create/", name="Crear cliente", tags=["Client"],
+          description="Crea un cliente nuevo. Requiere permisos de admin.\n"
+                      "Temporal: Se ingresa el ID manualmente. Cambiar luego")
+def create_client(client_name: Annotated[str, Query(min_length=1)], client_id: int):
+    response = dbRequests.create_new_client(client_name, client_id)
+    return {"status": response}
