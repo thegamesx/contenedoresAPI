@@ -1,18 +1,18 @@
-import json
+import os
 from supabase import Client, create_client
 from datetime import datetime
+from dotenv import load_dotenv
 
 defrost_default = 60
+
+load_dotenv()
+# Cargo las credenciales a través de un archivo
+url = os.getenv('SUPABASE_URL')
+key = os.getenv('SUPABASE_KEY')
 
 
 # Código para conectarme a la DB
 def connect():
-    # Cargo las credenciales a través de un archivo
-    with open('dbCredentials.json', 'r') as jsonFile:
-        credentials = json.load(jsonFile)
-    url = credentials['url']
-    key = credentials['key']
-
     supabase: Client = create_client(url, key)
 
     return supabase
