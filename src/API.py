@@ -1,8 +1,7 @@
-from typing import Union
 from fastapi import FastAPI, HTTPException, Query
 from typing_extensions import Annotated
 from pydantic import BaseModel
-import dbRequests
+import app.dbRequests as dbRequests
 
 tags_metadata = [
     {
