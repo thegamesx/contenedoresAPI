@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 from typing_extensions import Annotated
 from pydantic import BaseModel
 import app.dbRequests as dbRequests
@@ -13,6 +14,14 @@ tags_metadata = [
 ]
 
 app = FastAPI(openapi_tags=tags_metadata)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*'],
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*']
+)
 
 
 # CONTENEDORES
