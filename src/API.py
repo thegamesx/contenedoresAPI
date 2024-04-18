@@ -25,7 +25,7 @@ class Container(BaseModel):
     compresor: bool
     evaporacion: bool
     defrost: bool
-    arranque_comp: bool
+    # arranque_comp: bool
     bateria: bool
     alarma: bool
     defrost_status: bool
@@ -43,11 +43,6 @@ class ContainerList(BaseModel):
 class ContStatus(BaseModel):
     status: Container
     clients: list[Client] = []
-
-# TESTEO, BORRAR LUEGO
-@app.get("/test/")
-def test():
-    return dbRequests.test()
 
 
 @app.post("/cont/create/{cont_id}", name="Crear contenedor", tags=["Container"],
@@ -74,17 +69,17 @@ def status_cont(cont_id: int | None = None):
     clients = dbRequests.cont_assigned(status["idvigia"])
     # Ver que pasa si el contenedor no tiene clientes asignados.
     contStatus = Container(
-            cont_id=status["id"],
-            name=status["name"],
-            temp=status["temp"],
-            compresor=status["compresor"],
-            evaporacion=status["evaporacion"],
-            defrost=status["defrost"],
-            arranque_comp=status["arranque_comp"],
-            bateria=status["bateria"],
-            alarma=status["alarma"],
-            defrost_status=status["defrost_status"],
-        )
+        cont_id=status["id"],
+        name=status["name"],
+        temp=status["temp"],
+        compresor=status["compresor"],
+        evaporacion=status["evaporacion"],
+        defrost=status["defrost"],
+        # arranque_comp=status["arranque_comp"],
+        bateria=status["bateria"],
+        alarma=status["alarma"],
+        defrost_status=status["defrost_status"],
+    )
     clientList = []
     for client in clients:
         clientList.append(Client(
@@ -146,25 +141,29 @@ def update_cont(
         return {"status": "Se debe ingresar el id de un contenedor."}
 
 
+# TODO: Ver bien los errores
 @app.get("/client/status/{client_id}", name="Estado contenedores de un cliente", tags=["Client"],
          description="Devuelve el estado de todos los contenedores de un cliente.")
 def get_status(client_id: int):
     contStatus = dbRequests.status_cont_client(client_id)
+    if contStatus == -1:
+        raise HTTPException(status_code=404, detail="No se encontró el cliente.")
     results = ContainerList()
     for i, container in enumerate(contStatus):
-        currentContainer = Container(
-            cont_id=container["id"],
-            name=container["name"],
-            temp=container["temp"],
-            compresor=container["compresor"],
-            evaporacion=container["evaporacion"],
-            defrost=container["defrost"],
-            arranque_comp=container["arranque_comp"],
-            bateria=container["bateria"],
-            alarma=container["alarma"],
-            defrost_status=container["defrost_status"],
-        )
-        results.contList.append(currentContainer)
+        if container != -1:
+            currentContainer = Container(
+                cont_id=container["id"],
+                name=container["name"],
+                temp=container["temp"],
+                compresor=container["compresor"],
+                evaporacion=container["evaporacion"],
+                defrost=container["defrost"],
+                arranque_comp=container["arranque_comp"],
+                bateria=container["bateria"],
+                alarma=container["alarma"],
+                defrost_status=container["defrost_status"],
+            )
+            results.contList.append(currentContainer)
     return {"status": results}
 
 

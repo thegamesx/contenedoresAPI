@@ -14,7 +14,6 @@ key = os.getenv('SUPABASE_KEY')
 # Código para conectarme a la DB
 def connect():
     supabase: Client = create_client(url, key)
-
     return supabase
 
 
@@ -28,10 +27,6 @@ def delete_last_signals(cont_id):
                    eq("idvigia", cont_id).
                    limit(1).execute())
 """
-
-
-def test():
-    return {"url":url,"key":key}
 
 
 def del_cont(contID):
@@ -209,8 +204,11 @@ def status_cont_client(clientID):
                    select("relation(*)", count='exact').
                    eq("user_id", clientID).
                    execute())
+    if count[1]==0:
+        return -1
     all_cont_status = []
-    for row in data[1][0]['relation']:
+    relation = data[1][0]['relation']
+    for row in relation:
         data, count = (db.table("config").
                        select("*", count='exact').
                        eq("id", row["following_cont_id"]).
