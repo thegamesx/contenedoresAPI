@@ -44,6 +44,11 @@ class ContStatus(BaseModel):
     status: Container
     clients: list[Client] = []
 
+# TESTEO, BORRAR LUEGO
+@app.get("/test/")
+def test():
+    return dbRequests.test()
+
 
 @app.post("/cont/create/{cont_id}", name="Crear contenedor", tags=["Container"],
           description="Crea todas las relaciones de un contenedor. Debe proveerse un cliente para vincular, "

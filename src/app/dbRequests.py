@@ -30,6 +30,10 @@ def delete_last_signals(cont_id):
 """
 
 
+def test():
+    return {"url":url,"key":key}
+
+
 def del_cont(contID):
     db = connect()
     data, count = db.table("container").delete(count='exact').eq("following_cont_id", contID).execute()
