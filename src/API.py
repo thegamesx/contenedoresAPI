@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from typing_extensions import Annotated
 from pydantic import BaseModel
-import app.dbRequests as dbRequests
+import app.requests as dbRequests
 
 tags_metadata = [
     {
@@ -31,10 +31,8 @@ class Container(BaseModel):
     cont_id: int
     name: str
     temp: float
-    compresor: bool
-    evaporacion: bool
     defrost: bool
-    # arranque_comp: bool
+    arranque_comp: bool
     bateria: bool
     alarma: bool
     defrost_status: bool
@@ -81,11 +79,9 @@ def status_cont(cont_id: int | None = None):
         cont_id=status["id"],
         name=status["name"],
         temp=status["temp"],
-        compresor=status["compresor"],
-        evaporacion=status["evaporacion"],
-        defrost=status["defrost"],
-        # arranque_comp=status["arranque_comp"],
-        bateria=status["bateria"],
+        defrost=False if status["defrost"] is None else status["defrost"],
+        arranque_comp=False if status["arranque_comp"] is None else status["arranque_comp"],
+        bateria=False if status["bateria"] is None else status["bateria"],
         alarma=status["alarma"],
         defrost_status=status["defrost_status"],
     )
@@ -111,7 +107,7 @@ def delete_cont(cont_id: int | None = None):
         if results[0] == 0 and results[1] == 0:
             raise HTTPException(status_code=404, detail="No se encontró el contenedor")
         else:
-            return {"associations_deleted": results[0], "signals_deleted": results[1]}
+            return {"associations_deleted": results[0], "config_deleted": results[1], "signals_deleted": results[2]}
     else:
         raise HTTPException(status_code=400, detail="No se ingresó un numero de contenedor")
 
@@ -150,6 +146,18 @@ def update_cont(
         return {"status": "Se debe ingresar el id de un contenedor."}
 
 
+@app.post("/cont/link/", name="Vincular contenedor a un vigia", tags=["Container"],
+          description="Vincula un contenedor a un vigia. Ambos deben existir para hacer esto, "
+                      "sino puede usar el comando de crear contenedor.")
+def link_cont(cont_id: int, client_id: int):
+    response = dbRequests.link_cont_to_client(cont_id, client_id)
+    if response == -1:
+        raise HTTPException(status_code=404, detail="No se encontró el cliente.")
+    if response == -2:
+        raise HTTPException(status_code=404, detail="No se encontró el contenedor.")
+    return {"status": "Se vinculó el contenedor correctamente"}
+
+
 # TODO: Ver bien los errores
 @app.get("/client/status/{client_id}", name="Estado contenedores de un cliente", tags=["Client"],
          description="Devuelve el estado de todos los contenedores de un cliente.")
@@ -164,11 +172,9 @@ def get_status(client_id: int):
                 cont_id=container["id"],
                 name=container["name"],
                 temp=container["temp"],
-                compresor=container["compresor"],
-                evaporacion=container["evaporacion"],
-                defrost=container["defrost"],
-                arranque_comp=container["arranque_comp"],
-                bateria=container["bateria"],
+                defrost=False if container["defrost"] is None else container["defrost"],
+                arranque_comp=False if container["arranque_comp"] is None else container["arranque_comp"],
+                bateria=False if container["bateria"] is None else container["bateria"],
                 alarma=container["alarma"],
                 defrost_status=container["defrost_status"],
             )
