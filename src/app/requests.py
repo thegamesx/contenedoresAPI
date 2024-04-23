@@ -1,29 +1,7 @@
-import os
-from supabase import Client, create_client
 from datetime import datetime
-from dotenv import load_dotenv
-from .databaseCommands import db_select, db_insert, db_delete
+from .databaseCommands import db_select, db_insert, db_delete, db_update
 
 defrost_default = 60
-
-load_dotenv()
-# Cargo las credenciales a través de un archivo
-url = os.getenv('SUPABASE_URL')
-key = os.getenv('SUPABASE_KEY')
-
-API_email = os.getenv('API_EMAIL')
-API_password = os.getenv('API_PASSWORD')
-
-
-# Código para conectarme a la DB
-def connect():
-    supabase: Client = create_client(url, key)
-    try:
-        # Cambiar esto luego con el usuario y contraseña que corresponda
-        data = supabase.auth.sign_in_with_password({"email": API_email, "password": API_password})
-    except:
-        return -1
-    return supabase
 
 
 """ Esto se puede hacer directo en supabase. Averiguar
@@ -46,7 +24,7 @@ def del_cont(contID):
 
 
 # Limpia el historial de un contenedor. Usar en caso de error o cambios, porque el historial se va a purgar regularmente.
-# Mucho cuidado con usar este comando, ya que no reversible
+# Mucho cuidado con usar este comando, ya que no reversible. Probablemente quede como comando administrativo.
 def clear_history(contID):
     data, count = db_select("config", "signal_id", "container_id", contID)
     signal = data[0]["signal_id"]
@@ -56,15 +34,18 @@ def clear_history(contID):
 
 # Vincula un contenedor a un cliente. Ambos deben existir.
 def link_cont_to_client(contID, clientID):
-    client = return_client(clientID)
-    if client == -1:
+    data, count = db_select("client", "*", "user_id", clientID)
+    if count == 0:
         return -1
-    followedID = client["id"]
+    followedID = data[0]["id"]
     data, count = db_select("config", "*", "container_id", contID)
     if count == 0:
         return -2
-    # Ver si un contenedor ya está vinculado a un cliente
-    followingID = data[1][0]["id"]
+    followingID = data[0]["id"]
+    # Verificamos que ese contenedor no este asignado a esa cuenta antes de seguir
+    data, count = db_select("relation", "*", match={"following_cont_id": followingID, "followed_user_id": followedID})
+    if count > 0:
+        return -3
     data, count = db_insert("relation",{
         "following_cont_id": followingID,
         "followed_user_id": followedID,
@@ -80,8 +61,8 @@ def new_cont(clientID, contID, name):
     if count > 0:
         return -1
     # Verificamos que el cliente existe, si no no vamos a poder asignar el contenedor
-    client = return_client(clientID)
-    if client == -1:
+    data, count = db_select("client", "*", "user_id", clientID)
+    if count == 0:
         return -2
     data, count = db_insert("config", {
         "container_id": contID,
@@ -104,11 +85,7 @@ def assign_cont(clientID, contID, name):
 # Cambia el nombre de un contenedor
 # TODO: Testear
 def name_cont(contID, name):
-    db = connect()
-    data, count = (db.table("config").
-                   update({"display_name": name}, count='exact').
-                   eq("container_id", contID).
-                   execute())
+    data, count = db_update("config", {"display_name": name}, "container_id", contID)
     if count[1] == 0:
         return 0
     elif count[1] == 1:
@@ -202,18 +179,7 @@ def status_cont_client(clientID):
     return all_cont_status
 
 
-# Devuelve los datos de un cliente a traves de su ID
-# TODO: Ver de eliminar esta función si no es muy necesaria
-def return_client(clientID):
-    data, count = db_select("client", "*", "user_id", clientID)
-    if count == 0:
-        return -1
-    else:
-        return data[0]
-
-
 # Crea un cliente. Revisar luego de ver los permisos y el auth
 def create_new_client(name, clientID):
-    db = connect()
-    data, count = db.table("client").insert({"title": name, "user_id": clientID}).execute()  # ver como asignar las id
+    data, count = db_insert("client", {"title": name, "user_id": clientID})  # ver como asignar las id
     return data
