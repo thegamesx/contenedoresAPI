@@ -1,8 +1,14 @@
-from fastapi import FastAPI, HTTPException, Query
+import os
+from typing import Optional
+
+from fastapi import FastAPI, HTTPException, Query, Security, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+import jwt
 from typing_extensions import Annotated
 from pydantic import BaseModel
 import app.requests as requests
+from src.app.utils import UnauthenticatedException, UnauthorizedException, VerifyToken
 
 tags_metadata = [
     {
@@ -13,15 +19,42 @@ tags_metadata = [
     }
 ]
 
-app = FastAPI(openapi_tags=tags_metadata)
+# SEGURIDAD
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=['*'],
-    allow_credentials=True,
-    allow_methods=['*'],
-    allow_headers=['*']
-)
+
+AUTH0_DOMAIN = os.getenv("AUTH0_DOMAIN")
+AUTH0_AUDIENCE = os.getenv("AUTH0_API_AUDIENCE")
+AUTH0_ISSUER = os.getenv("AUTH0_ISSUER")
+AUTH0_ALGORITHMS = os.getenv("AUTH0_ALGORITHMS")
+AUTH0_CLIENT_ID = os.getenv("AUTH0_CLIENT_ID")
+AUTH0_CLIENT_SECRET = os.getenv("AUTH0_CLIENT_SECRET")
+
+JWKS_CLIENT = jwt.PyJWKClient(f"https://{AUTH0_DOMAIN}/.well-known/jwks.json")
+
+
+def verify(token: Optional[HTTPAuthorizationCredentials] = Security(HTTPBearer(auto_error=False)), ) -> str:
+    if token is None:
+        raise UnauthenticatedException
+
+    try:
+        signing_key = JWKS_CLIENT.get_signing_key_from_jwt(token.credentials).key
+    except jwt.exceptions.PyJWKClientError as error:
+        raise UnauthorizedException(str(error))
+    except jwt.exceptions.DecodeError as error:
+        raise UnauthorizedException(str(error))
+
+    try:
+        payload = jwt.decode(
+            token.credentials,
+            signing_key,
+            algorithms=[AUTH0_ALGORITHMS],
+            audience=AUTH0_AUDIENCE,
+            issuer=AUTH0_ISSUER,
+        )
+    except Exception as error:
+        raise UnauthorizedException(str(error))
+
+    return payload["sub"]
 
 
 # CONTENEDORES
@@ -54,6 +87,40 @@ class ContStatus(BaseModel):
 
 class StatusList(BaseModel):
     statusList: list[ContStatus] = []
+
+
+app = FastAPI(openapi_tags=tags_metadata)
+auth = VerifyToken()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*'],
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*']
+)
+
+
+# TEST COMMANDS
+
+@app.get("/test/public", name="Test public permission")
+def public():
+    return {"message": "Este mensaje es publico y accesible por cualquiera."}
+
+
+@app.get("/test/protected", name="Test public permission")
+def protected(auth_result: str = Security(auth.verify)):
+    return {"message": "Este mensaje esta protegido y solo es accesible por usuarios registrados.",
+            "returns": auth_result}
+
+
+@app.get("/test/admin", name="Test public permission")
+def admin(auth_result: str = Security(auth.verify, scopes=['read:messages'])):
+    return {"message": "Este mensaje es publico y accesible por cualquiera.",
+            "returns": auth_result}
+
+
+# END TEST
 
 
 @app.post("/cont/create/{cont_id}", name="Crear contenedor", tags=["Container"],
@@ -131,7 +198,7 @@ def delete_cont(cont_id: int | None = None):
         raise HTTPException(status_code=400, detail="No se ingresó un numero de contenedor")
 
 
-#Cambiar este comando, hacerlo más simple.
+# Cambiar este comando, hacerlo más simple.
 @app.put("/cont/update/", name="Modificar contenedor", tags=["Container"],
          description="Actualiza el nombre de un contenedor en particular. "
                      "Esto solo lo puede realizar el dueño del mismo.")
@@ -178,7 +245,7 @@ def get_status(
         client_id: int,
         return_status: bool | None = True,
         return_vigias: bool | None = False
-        ):
+):
     contStatus = requests.status_cont_client(client_id)
     if contStatus == -1:
         raise HTTPException(status_code=404, detail="No se encontró el cliente.")

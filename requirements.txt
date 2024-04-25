@@ -3,3 +3,4 @@ pydantic
 uvicorn
 supabase
 python-dotenv
+pyjwt[crypto]

@@ -2,7 +2,8 @@ from typing import Optional
 import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import SecurityScopes, HTTPAuthorizationCredentials, HTTPBearer
-from config import get_settings
+from .config import get_settings
+import ssl
 
 
 class UnauthorizedException(HTTPException):
@@ -25,10 +26,12 @@ class VerifyToken:
         # This gets the JWKS from a given URL and does processing, so you can
         # use any of the keys available
         jwks_url = f'https://{self.config.auth0_domain}/.well-known/jwks.json'
-        self.jwks_client = jwt.PyJWKClient(jwks_url)
+        ssl_ctx = ssl.create_default_context()
+        ssl_ctx.load_verify_locations(cafile="../.venv/Lib/site-packages/certifi/cacert.pem")
+        self.jwks_client = jwt.PyJWKClient(jwks_url, ssl_context=ssl_ctx)
 
     async def verify(self,
-                     # security_scopes: SecurityScopes,
+                     security_scopes: SecurityScopes,
                      token: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer())
                      ):
         if token is None:
