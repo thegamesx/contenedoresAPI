@@ -133,22 +133,15 @@ def delete_cont(cont_id: int | None = None):
 
 #Cambiar este comando, hacerlo más simple.
 @app.put("/cont/update/", name="Modificar contenedor", tags=["Container"],
-         description="Actualiza un contenedor en particular. Los datos que se pueden cambiar son:\n"
-                     "- Vincular a un cliente nuevo\n"
-                     "- Actualizar el nombre\n"
-                     "- Limpiar historial de señales")
+         description="Actualiza el nombre de un contenedor en particular. "
+                     "Esto solo lo puede realizar el dueño del mismo.")
 def update_cont(
         cont_id: int | None = None,
-        client_id: int | None = None,
         display_name: str | None = None,
-        clear_history: bool | None = False
 ):
     assign_request = {}
     if cont_id:
-        if client_id:
-            assign_request["link_status"] = requests.assign_cont(client_id, cont_id, display_name)
-            if assign_request["link_status"] == -1:
-                raise HTTPException(status_code=400, detail="El cliente ya tiene asignado ese contenedor.")
+        # Checkear permisos antes de hacer el cambio.
         if display_name:
             assign_request["name_status"] = requests.name_cont(cont_id, display_name)
             if assign_request["name_status"] == 0:
@@ -156,14 +149,10 @@ def update_cont(
             if assign_request["name_status"] == -1:
                 raise HTTPException(status_code=422,
                                     detail="Ocurrió un error inesperado. Contacte al administrador del sistema.")
-        if clear_history:
-            assign_request["history_rows_deleted"] = requests.clear_history(cont_id)
-        if assign_request == {}:
-            raise HTTPException(status_code=400, detail="No se realizaron cambios, revise los datos ingresados.")
         else:
-            return assign_request
+            raise HTTPException(status_code=400, detail="El nombre no puede estar vacío.")
     else:
-        return {"status": "Se debe ingresar el id de un contenedor."}
+        raise HTTPException(status_code=400, detail="Se debe ingresar el id de un contenedor.")
 
 
 @app.post("/cont/link/", name="Vincular contenedor a un vigia", tags=["Container"],
