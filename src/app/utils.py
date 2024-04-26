@@ -3,7 +3,7 @@ import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import SecurityScopes, HTTPAuthorizationCredentials, HTTPBearer
 from .config import get_settings
-import ssl
+from supabase import Client, create_client
 
 
 class UnauthorizedException(HTTPException):
@@ -26,9 +26,7 @@ class VerifyToken:
         # This gets the JWKS from a given URL and does processing, so you can
         # use any of the keys available
         jwks_url = f'https://{self.config.auth0_domain}/.well-known/jwks.json'
-        ssl_ctx = ssl.create_default_context()
-        ssl_ctx.load_verify_locations(cafile="../.venv/Lib/site-packages/certifi/cacert.pem")
-        self.jwks_client = jwt.PyJWKClient(jwks_url, ssl_context=ssl_ctx)
+        self.jwks_client = jwt.PyJWKClient(jwks_url)
 
     async def verify(self,
                      security_scopes: SecurityScopes,
@@ -39,9 +37,7 @@ class VerifyToken:
 
         # This gets the 'kid' from the passed token
         try:
-            signing_key = self.jwks_client.get_signing_key_from_jwt(
-                token.credentials
-            ).key
+            signing_key = self.jwks_client.get_signing_key_from_jwt(token.credentials).key
         except jwt.exceptions.PyJWKClientError as error:
             raise UnauthorizedException(str(error))
         except jwt.exceptions.DecodeError as error:
@@ -53,9 +49,26 @@ class VerifyToken:
                 signing_key,
                 algorithms=self.config.auth0_algorithms,
                 audience=self.config.auth0_api_audience,
-                issuer=self.config.auth0_issuer,
             )
+            pass
         except Exception as error:
             raise UnauthorizedException(str(error))
 
         return payload
+
+
+# Código para conectarme a la DB
+# TODO: Ver como evitar conectarse cada vez que se hace una request a la db
+class Connect:
+    def __init__(self):
+        self.config = get_settings()
+
+    def connect(self):
+        supabase: Client = create_client(self.config.supabase_url, self.config.supabase_key)
+        try:
+            # Cambiar esto luego con el usuario y contraseña que corresponda
+            data = supabase.auth.sign_in_with_password(
+                {"email": self.config.api_email, "password": self.config.api_password})
+        except: # Cambiar esto por algo mas apropiado
+            return -1
+        return supabase
