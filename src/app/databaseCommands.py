@@ -3,6 +3,7 @@ from src.app.utils import Connect
 connection = Connect()
 db = connection.connect()
 
+
 def db_select(table, columns, equalColumn=False, equalValue=False, setOrder="id", setLimit=None, match=False):
     #db = connect()
     if match:
@@ -43,7 +44,7 @@ def db_delete(table, equalColumn, equalValue):
                    delete(count='exact').
                    eq(equalColumn, equalValue).
                    execute())
-    return data, count[1]
+    return count[1]
 
 
 def db_insert(table, dataDict):

@@ -6,7 +6,6 @@ import app.requests as requests
 from src.app.utils import VerifyToken
 from src.app.config import get_metadata
 
-
 # CONFIGURACIÓN
 
 
@@ -79,9 +78,14 @@ def admin(auth_result: str = Security(auth.verify, scopes=['read:messages'])):
 @app.post("/cont/create/{cont_id}", name="Crear contenedor", tags=["Container"],
           description="Crea todas las relaciones de un contenedor. Debe proveerse un cliente para vincular, "
                       "pero luego se pueden vincular nuevos o modificarlos.")
-def create_cont(cont_id: int | None = None, client_id: int | None = None, name: str | None = None):
+def create_cont(
+        cont_id: int | None = None,
+        client_id: int | None = None,
+        name: str | None = None,
+        owner: bool | None = False
+):
     # Primero nos fijamos si el cliente existe
-    response = requests.new_cont(client_id, cont_id, name)
+    response = requests.new_cont(client_id, cont_id, name, owner)
     if response == -1:
         raise HTTPException(status_code=400, detail="El contenedor ingresado ya existe.")
     if response == -2:
@@ -158,19 +162,24 @@ def delete_cont(cont_id: int | None = None):
 def update_cont(
         cont_id: int | None = None,
         display_name: str | None = None,
+        auth_result: str = Security(auth.verify)
 ):
     assign_request = {}
     if cont_id:
-        # Checkear permisos antes de hacer el cambio.
-        if display_name:
-            assign_request["name_status"] = requests.name_cont(cont_id, display_name)
-            if assign_request["name_status"] == 0:
-                raise HTTPException(status_code=404, detail="No se encontró el contenedor.")
-            if assign_request["name_status"] == -1:
-                raise HTTPException(status_code=422,
-                                    detail="Ocurrió un error inesperado. Contacte al administrador del sistema.")
+        # Checkea permisos antes de hacer el cambio.
+        if requests.check_ownership(auth_result["sub"], cont_id):
+            if display_name:
+                assign_request["name_status"] = requests.name_cont(cont_id, display_name)
+                if assign_request["name_status"] == 0:
+                    raise HTTPException(status_code=404, detail="No se encontró el contenedor.")
+                if assign_request["name_status"] == -1:
+                    raise HTTPException(status_code=422,
+                                        detail="Ocurrió un error inesperado. Contacte al administrador del sistema.")
+                return {"status": "El nombre se cambió exitosamente."}
+            else:
+                raise HTTPException(status_code=400, detail="El nombre no puede estar vacío.")
         else:
-            raise HTTPException(status_code=400, detail="El nombre no puede estar vacío.")
+            raise HTTPException(status_code=403, detail="Solo el dueño del contenedor puede cambiar su nombre.")
     else:
         raise HTTPException(status_code=400, detail="Se debe ingresar el id de un contenedor.")
 
@@ -238,8 +247,13 @@ def get_status(
 
 # Asignar permisos de admin para usar este comando. Crea clientes nuevos
 @app.post("/client/create/", name="Crear cliente", tags=["Client"],
-          description="Crea un cliente nuevo. Requiere permisos de admin.\n"
-                      "Temporal: Se ingresa el ID manualmente. Cambiar luego")
-def create_client(client_name: Annotated[str, Query(min_length=1)], client_id: int):
-    response = requests.create_new_client(client_name, client_id)
-    return {"status": response}
+          description="Registra un cliente en la base de datos cuando se loggea por primera vez.")
+def create_client(auth_result: str = Security(auth.verify)):
+    try:
+        username = auth_result["nickname"]
+    except:
+        username = "Usuario"
+    result = requests.create_new_client(username, auth_result["sub"])
+    if result == -1:
+        raise HTTPException(status_code=400, detail="El cliente ya está registrado en la base de datos.")
+    return {"results": result}

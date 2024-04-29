@@ -7,10 +7,10 @@
     <list default="true" id="26cf6396-54b6-4961-ae32-9550231989db" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/API.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/API.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/config.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/app/databaseCommands.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/databaseCommands.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/logic.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/logic.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/requests.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/requests.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/app/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/server.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,14 +39,12 @@
     &quot;assignee&quot;: &quot;thegamesx&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">
-    <option name="selectedUrlAndAccountId">
-      <UrlAndAccount>
-        <option name="accountId" value="6690a26f-7e6c-4211-80b7-bb5a77ea9e59" />
-        <option name="url" value="https://github.com/thegamesx/contenedoresAPI.git" />
-      </UrlAndAccount>
-    </option>
-  </component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/thegamesx/contenedoresAPI.git&quot;,
+    &quot;accountId&quot;: &quot;6690a26f-7e6c-4211-80b7-bb5a77ea9e59&quot;
+  }
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 7
 }</component>
@@ -173,7 +171,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-09665e90c3a7-d3b881c8e49f-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-233.15026.15" />
+        <option value="bundled-python-sdk-0509580d9d50-746f403e7f0c-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-241.14494.241" />
       </set>
     </attachedChunks>
   </component>
@@ -322,7 +320,15 @@
       <option name="project" value="LOCAL" />
       <updated>1714073284482</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="0.0.11 WIP&#10;&#10;Conexión a auth0 exitosa. Ahora hay que ver como crear y loggear usuarios.">
+      <option name="closed" value="true" />
+      <created>1714146692153</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1714146692153</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -340,30 +346,66 @@
     <MESSAGE value="0.0.8" />
     <MESSAGE value="0.0.9&#10;&#10;Pequeños cambios antes de testear la implementacion de auth0" />
     <MESSAGE value="0.0.10 WIP&#10;&#10;Testeando auth0" />
-    <option name="LAST_COMMIT_MESSAGE" value="0.0.10 WIP&#10;&#10;Testeando auth0" />
+    <MESSAGE value="0.0.11 WIP&#10;&#10;Conexión a auth0 exitosa. Ahora hay que ver como crear y loggear usuarios." />
+    <option name="LAST_COMMIT_MESSAGE" value="0.0.11 WIP&#10;&#10;Conexión a auth0 exitosa. Ahora hay que ver como crear y loggear usuarios." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/app/requests.py</url>
-          <line>163</line>
+          <line>164</line>
           <option name="timeStamp" value="18" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/app/requests.py</url>
-          <line>152</line>
+          <line>153</line>
           <option name="timeStamp" value="21" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/app/requests.py</url>
-          <line>130</line>
+          <line>131</line>
           <option name="timeStamp" value="22" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/app/requests.py</url>
           <line>46</line>
           <option name="timeStamp" value="24" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/app/requests.py</url>
+          <line>30</line>
+          <option name="timeStamp" value="36" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/app/requests.py</url>
+          <line>20</line>
+          <option name="timeStamp" value="37" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/app/requests.py</url>
+          <line>190</line>
+          <option name="timeStamp" value="38" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/app/requests.py</url>
+          <line>191</line>
+          <option name="timeStamp" value="39" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/app/requests.py</url>
+          <line>188</line>
+          <option name="timeStamp" value="40" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/app/requests.py</url>
+          <line>88</line>
+          <option name="timeStamp" value="41" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/src/app/requests.py</url>
+          <line>89</line>
+          <option name="timeStamp" value="42" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -372,6 +414,7 @@
         <watch expression="data" />
         <watch expression="row" />
         <watch expression="token" />
+        <watch expression="decoded_info" />
       </configuration>
     </watches-manager>
   </component>

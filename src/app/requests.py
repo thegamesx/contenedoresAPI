@@ -1,8 +1,8 @@
 from datetime import datetime
 from .databaseCommands import db_select, db_insert, db_delete, db_update
+import src.app.logic as logic
 
 defrost_default = 60
-
 
 """ Esto se puede hacer directo en supabase. Averiguar
 # Limpia las señales antiguas. El valor por defecto es 20
@@ -33,7 +33,7 @@ def clear_history(contID):
 
 
 # Vincula un contenedor a un cliente. Ambos deben existir.
-def link_cont_to_client(contID, clientID):
+def link_cont_to_client(contID, clientID, owner=False):
     data, count = db_select("client", "*", "user_id", clientID)
     if count == 0:
         return -1
@@ -46,16 +46,17 @@ def link_cont_to_client(contID, clientID):
     data, count = db_select("relation", "*", match={"following_cont_id": followingID, "followed_user_id": followedID})
     if count > 0:
         return -3
-    data, count = db_insert("relation",{
+    data, count = db_insert("relation", {
         "following_cont_id": followingID,
         "followed_user_id": followedID,
+        "ownership": owner
     })
     return data
 
 
 # Ingresa un contenedor al sistema, creando todas las relaciones necesarias. Es necesario asignar un cliente como minimo
 # TODO: TESTEAR
-def new_cont(clientID, contID, name):
+def new_cont(clientID, contID, name, owner=False):
     # Primero nos fijamos si el contenedor ya existe
     data, count = db_select("config", "*", "container_id", contID)
     if count > 0:
@@ -69,7 +70,7 @@ def new_cont(clientID, contID, name):
         "display_name": name if name else "Sin nombre",
         "signal_id": contID  # Ver si cambiar esto
     })
-    link_cont_to_client(contID, clientID)
+    link_cont_to_client(contID, clientID, owner)
     return data
 
 
@@ -85,11 +86,11 @@ def assign_cont(clientID, contID, name):
 # Cambia el nombre de un contenedor
 # TODO: Testear
 def name_cont(contID, name):
-    data, count = db_update("config", {"display_name": name}, "container_id", contID)
-    if count[1] == 0:
+    count = db_update("config", {"display_name": name}, "container_id", contID)
+    if count == 0:
         return 0
-    elif count[1] == 1:
-        return data
+    elif count == 1:
+        return count
     else:
         return -1
 
@@ -179,7 +180,23 @@ def status_cont_client(clientID):
     return all_cont_status
 
 
-# Crea un cliente. Revisar luego de ver los permisos y el auth
+# Verifica si el contenedor pertenece al usuario
+def check_ownership(clientID, contID):
+    dataClient, count = db_select("client", "relation(*)", "user_id", clientID)
+    for rowClient in dataClient:
+        dataCont, count2 = db_select("config", "relation(*)", "container_id", contID)
+        for rowCont in dataCont:
+            if rowClient["following_cont_id"] == rowCont["following_cont_id"]:
+                if rowClient["ownership"]:
+                    return True
+    return False
+
+
+# Crea un cliente. Usa el id del Auth0 como identificador.
 def create_new_client(name, clientID):
-    data, count = db_insert("client", {"title": name, "user_id": clientID})  # ver como asignar las id
+    # Primero nos fijamos si existe
+    data, count = db_select("client", "*", "user_id", clientID)
+    if count > 0:
+        return -1
+    data, count = db_insert("client", {"name": name, "user_id": clientID})
     return data

@@ -1,4 +1,5 @@
 from datetime import datetime
+import jwt
 
 
 def convert_date(dateStr):
@@ -15,3 +16,6 @@ def controller_status(lastSignal):
         return True
     else:
         return False
+
+def get_user_id(token):
+    pass

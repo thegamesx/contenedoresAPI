@@ -19,6 +19,13 @@ class UnauthenticatedException(HTTPException):
         )
 
 
+class DBConnectionError(HTTPException):
+    def __init__(self, detail: str, **kwargs):
+        super().__init__(
+            status_code=status.HTTP_408_REQUEST_TIMEOUT, detail=detail
+        )
+
+
 class VerifyToken:
     def __init__(self):
         self.config = get_settings()
@@ -29,9 +36,9 @@ class VerifyToken:
         self.jwks_client = jwt.PyJWKClient(jwks_url)
 
     async def verify(self,
-                     security_scopes: SecurityScopes,
-                     token: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer())
-                     ):
+               security_scopes: SecurityScopes,
+               token: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer())
+               ):
         if token is None:
             raise UnauthenticatedException
 
@@ -50,7 +57,6 @@ class VerifyToken:
                 algorithms=self.config.auth0_algorithms,
                 audience=self.config.auth0_api_audience,
             )
-            pass
         except Exception as error:
             raise UnauthorizedException(str(error))
 
@@ -69,6 +75,6 @@ class Connect:
             # Cambiar esto luego con el usuario y contraseña que corresponda
             data = supabase.auth.sign_in_with_password(
                 {"email": self.config.api_email, "password": self.config.api_password})
-        except: # Cambiar esto por algo mas apropiado
-            return -1
+        except Exception as error:
+            raise DBConnectionError(str(error))
         return supabase
