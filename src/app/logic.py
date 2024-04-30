@@ -16,6 +16,3 @@ def controller_status(lastSignal):
         return True
     else:
         return False
-
-def get_user_id(token):
-    pass

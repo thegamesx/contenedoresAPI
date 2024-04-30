@@ -5,7 +5,6 @@ db = connection.connect()
 
 
 def db_select(table, columns, equalColumn=False, equalValue=False, setOrder="id", setLimit=None, match=False):
-    #db = connect()
     if match:
         data, count = (db.table(table).
                        select(columns, count='exact').
@@ -30,7 +29,6 @@ def db_select(table, columns, equalColumn=False, equalValue=False, setOrder="id"
 
 
 def db_update(table, updateDict, equalColumn, equalValue):
-    #db = connect()
     data, count = (db.table(table).
                    update(updateDict, count='exact').
                    eq(equalColumn, equalValue).
@@ -39,7 +37,6 @@ def db_update(table, updateDict, equalColumn, equalValue):
 
 
 def db_delete(table, equalColumn, equalValue):
-    #db = connect()
     data, count = (db.table(table).
                    delete(count='exact').
                    eq(equalColumn, equalValue).
@@ -48,7 +45,6 @@ def db_delete(table, equalColumn, equalValue):
 
 
 def db_insert(table, dataDict):
-    #db = connect()
     data, count = (db.table(table).
                    insert(dataDict).
                    execute())

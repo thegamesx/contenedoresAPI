@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     auth0_algorithms: str
     auth0_client_id: str
     auth0_client_secret: str
+    auth0_management_token: str
 
     class Config:
         env_file = ".env"
@@ -31,7 +32,8 @@ def get_settings():
         auth0_api_audience=os.getenv("AUTH0_API_AUDIENCE"),
         auth0_algorithms=os.getenv("AUTH0_ALGORITHMS"),
         auth0_client_id=os.getenv("AUTH0_CLIENT_ID"),
-        auth0_client_secret=os.getenv("AUTH0_CLIENT_SECRET")
+        auth0_client_secret=os.getenv("AUTH0_CLIENT_SECRET"),
+        auth0_management_token=os.getenv("AUTH0_MANAGEMENT_TOKEN")
     )
 
 

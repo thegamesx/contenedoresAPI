@@ -4,6 +4,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import SecurityScopes, HTTPAuthorizationCredentials, HTTPBearer
 from .config import get_settings
 from supabase import Client, create_client
+import http.client
 
 
 class UnauthorizedException(HTTPException):
@@ -36,9 +37,9 @@ class VerifyToken:
         self.jwks_client = jwt.PyJWKClient(jwks_url)
 
     async def verify(self,
-               security_scopes: SecurityScopes,
-               token: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer())
-               ):
+                     security_scopes: SecurityScopes,
+                     token: Optional[HTTPAuthorizationCredentials] = Depends(HTTPBearer())
+                     ):
         if token is None:
             raise UnauthenticatedException
 
@@ -62,9 +63,28 @@ class VerifyToken:
 
         return payload
 
+    # TODO: Testear
+    async def register_owner(self, userID):
+        conn = http.client.HTTPSConnection("")
+
+        # Ver si es necesario sacarle el hardcode al rol id
+        payload = "{ \"roles\": [ \"rol_xGUgBNgqN8t4RijP\", \"rol_xGUgBNgqN8t4RijP\" ] }"
+
+        headers = {
+            'content-type': "application/json",
+            'authorization': "Bearer " + self.config.auth0_management_token,
+            'cache-control': "no-cache"
+        }
+
+        conn.request("POST", "/" + self.config.auth0_domain + "/api/v2/users/" + userID + "/roles", payload, headers)
+
+        res = conn.getresponse()
+        data = res.read()
+
+        print(data.decode("utf-8"))
+
 
 # Código para conectarme a la DB
-# TODO: Ver como evitar conectarse cada vez que se hace una request a la db
 class Connect:
     def __init__(self):
         self.config = get_settings()
@@ -78,3 +98,5 @@ class Connect:
         except Exception as error:
             raise DBConnectionError(str(error))
         return supabase
+
+

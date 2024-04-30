@@ -6,6 +6,7 @@ import app.requests as requests
 from src.app.utils import VerifyToken
 from src.app.config import get_metadata
 
+
 # CONFIGURACIÓN
 
 
@@ -53,43 +54,28 @@ class StatusList(BaseModel):
     statusList: list[ContStatus] = []
 
 
-# TEST COMMANDS
-
-@app.get("/test/public", name="Test public permission")
-def public():
-    return {"message": "Este mensaje es publico y accesible por cualquiera."}
-
-
-@app.get("/test/protected", name="Test public permission")
-def protected(auth_result: str = Security(auth.verify)):
-    return {"message": "Este mensaje esta protegido y solo es accesible por usuarios registrados.",
-            "returns": auth_result}
-
-
-@app.get("/test/admin", name="Test public permission")
-def admin(auth_result: str = Security(auth.verify, scopes=['read:messages'])):
-    return {"message": "Este mensaje es solo para administradores.",
-            "returns": auth_result}
-
-
 # API CALLS
 
 
 @app.post("/cont/create/{cont_id}", name="Crear contenedor", tags=["Container"],
-          description="Crea todas las relaciones de un contenedor. Debe proveerse un cliente para vincular, "
-                      "pero luego se pueden vincular nuevos o modificarlos.")
+          description="Crea todas las relaciones de un contenedor. Debe proveerse un cliente para vincular "
+                      "(por defecto es la cuenta loggeada), pero luego se pueden vincular nuevos o modificarlos.")
 def create_cont(
         cont_id: int | None = None,
         client_id: int | None = None,
         name: str | None = None,
-        owner: bool | None = False
+        owner: bool | None = False,
+        auth_result: str = Security(auth.verify)
 ):
+    # Ver como vincular un contenedor a un usuario de manera privada y segura
     # Primero nos fijamos si el cliente existe
-    response = requests.new_cont(client_id, cont_id, name, owner)
+    response = requests.new_cont(client_id if client_id else auth_result["sub"], cont_id, name, owner)
     if response == -1:
         raise HTTPException(status_code=400, detail="El contenedor ingresado ya existe.")
     if response == -2:
         raise HTTPException(status_code=404, detail="No se encontró el cliente")
+    if owner:
+        auth.register_owner(client_id if client_id else auth_result["sub"])
     return {"status": "El contenedor fue creado con éxito."}
 
 
@@ -99,7 +85,8 @@ def create_cont(
                      "También sirve para ver que clientes tiene asociado.")
 def status_cont(cont_id: int | None = None,
                 show_status: bool | None = True,
-                show_vigias: bool | None = True):
+                show_vigias: bool | None = True # Esto debería mostrarlo solo si lo está viendo el dueño del cont
+                ):
     status = requests.cont_status(cont_id)
     if status == -1:
         raise HTTPException(status_code=404, detail="No se encontró el contenedor")
@@ -141,28 +128,34 @@ def status_cont(cont_id: int | None = None,
         return {"warning": "El contenedor no tiene clientes asociados", "status": contStatus}
 
 
+# Ver los permisos SSL en la db, actualmente no funciona este comando
 @app.delete("/cont/delete/{cont_id}", name="Eliminar contenedor", tags=["Container"],
             description="Elimina un contenedor, incluyendo todas sus señales y configuraciones.\n"
-                        "Mucho cuidado usando esto.")
-def delete_cont(cont_id: int | None = None):
-    if cont_id:
-        results = requests.del_cont(cont_id)
-        if results[0] == 0 and results[1] == 0:
-            raise HTTPException(status_code=404, detail="No se encontró el contenedor")
+                        "Mucho cuidado usando esto. Requiere ser el dueño.")
+def delete_cont(
+        cont_id: int | None = None,
+        auth_result: str = Security(auth.verify, scopes=['mod:cont'])
+):
+    if requests.check_ownership(auth_result["sub"], cont_id):
+        if cont_id:
+            results = requests.del_cont(cont_id)
+            if results[0] == 0 and results[1] == 0:
+                raise HTTPException(status_code=404, detail="No se encontró el contenedor")
+            else:
+                return {"associations_deleted": results[0], "config_deleted": results[1], "signals_deleted": results[2]}
         else:
-            return {"associations_deleted": results[0], "config_deleted": results[1], "signals_deleted": results[2]}
+            raise HTTPException(status_code=400, detail="No se ingresó un numero de contenedor")
     else:
-        raise HTTPException(status_code=400, detail="No se ingresó un numero de contenedor")
+        raise HTTPException(status_code=403, detail="No puede eliminar un contenedor que no le pertenece.")
 
 
-# Cambiar este comando, hacerlo más simple.
 @app.put("/cont/update/", name="Modificar contenedor", tags=["Container"],
          description="Actualiza el nombre de un contenedor en particular. "
                      "Esto solo lo puede realizar el dueño del mismo.")
 def update_cont(
         cont_id: int | None = None,
         display_name: str | None = None,
-        auth_result: str = Security(auth.verify)
+        auth_result: str = Security(auth.verify, scopes=['mod:cont'])
 ):
     assign_request = {}
     if cont_id:
@@ -181,34 +174,50 @@ def update_cont(
         else:
             raise HTTPException(status_code=403, detail="Solo el dueño del contenedor puede cambiar su nombre.")
     else:
-        raise HTTPException(status_code=400, detail="Se debe ingresar el id de un contenedor.")
+        raise HTTPException(status_code=403, detail="Se debe ingresar el id de un contenedor.")
 
 
 @app.post("/cont/link/", name="Vincular contenedor a un vigia", tags=["Container"],
           description="Vincula un contenedor a un vigia. Ambos deben existir para hacer esto, "
                       "sino puede usar el comando de crear contenedor.")
-def link_cont(cont_id: int, client_id: int):
-    response = requests.link_cont_to_client(cont_id, client_id)
-    if response == -1:
-        raise HTTPException(status_code=404, detail="No se encontró el usuario.")
-    if response == -2:
-        raise HTTPException(status_code=404, detail="No se encontró el contenedor.")
-    if response == -3:
-        raise HTTPException(status_code=400, detail="Este contenedor ya está asignado al vigia.")
-    return {"status": "Se vinculó el contenedor correctamente"}
+def link_cont(
+        cont_id: int,
+        vigia_id: int,
+        auth_result: str = Security(auth.verify, scopes=['add:vigia'])
+):
+    # Solo el dueño del contenedor puede vincular, asi que chequeamos eso primero
+    if requests.check_ownership(auth_result["sub"], cont_id):
+        response = requests.link_cont_to_client(cont_id, vigia_id)
+        if response == -1:
+            raise HTTPException(status_code=404, detail="No se encontró el usuario.")
+        if response == -2:
+            raise HTTPException(status_code=404, detail="No se encontró el contenedor.")
+        if response == -3:
+            raise HTTPException(status_code=400, detail="Este contenedor ya está asignado al vigia.")
+        return {"status": "Se vinculó el contenedor correctamente"}
+    else:
+        raise HTTPException(status_code=400, detail="No puede vincular un contenedor que no es suyo.")
 
 
 # TODO: Ver bien los errores
 @app.get("/client/status/{client_id}", name="Estado contenedores de un cliente", tags=["Client"],
          description="Devuelve el estado de todos los contenedores de un cliente.\n"
+                     "Por defecto devuelve los contenedores asociados al usuario registrado, pero se puede"
+                     "especificar uno diferente. Si se hace, ese va a tener prioridad.\n"
                      "También puede devolver los vigias asociados a cada contenedor. En ese caso se puede desactivar "
                      "mostrar su estado si es necesario.")
 def get_status(
-        client_id: int,
+        client_id: int | None = None,
         return_status: bool | None = True,
-        return_vigias: bool | None = False
+        return_vigias: bool | None = False,
+        auth_result: str = Security(auth.verify)
 ):
-    contStatus = requests.status_cont_client(client_id)
+    # Si se ingresa un usuario específico va a tener prioridad este,
+    # si no se usa el usuario de la cuenta que hace el request
+    if client_id:
+        contStatus = requests.status_cont_client(client_id)
+    else:
+        contStatus = requests.status_cont_client(auth_result["sub"])
     if contStatus == -1:
         raise HTTPException(status_code=404, detail="No se encontró el cliente.")
     if return_vigias:
@@ -245,7 +254,8 @@ def get_status(
     return {"status": results}
 
 
-# Asignar permisos de admin para usar este comando. Crea clientes nuevos
+# No creo que sea necesario incrementar los permisos de este comando, ya que solo crea una cuenta usando las
+# credenciales que se usaron para logguearse. Asi que no se deberían poder crear cuentas ilegítimas.
 @app.post("/client/create/", name="Crear cliente", tags=["Client"],
           description="Registra un cliente en la base de datos cuando se loggea por primera vez.")
 def create_client(auth_result: str = Security(auth.verify)):
