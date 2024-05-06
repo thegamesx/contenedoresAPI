@@ -7,10 +7,6 @@
     <list default="true" id="26cf6396-54b6-4961-ae32-9550231989db" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/API.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/API.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/databaseCommands.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/databaseCommands.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/logic.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/logic.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/utils.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -336,7 +332,15 @@
       <option name="project" value="LOCAL" />
       <updated>1714411851049</updated>
     </task>
-    <option name="localTasksCounter" value="20" />
+    <task id="LOCAL-00020" summary="0.0.13 WIP&#10;&#10;Pequeños cambios para ir implementando los permisos">
+      <option name="closed" value="true" />
+      <created>1714488244383</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1714488244383</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -356,7 +360,8 @@
     <MESSAGE value="0.0.10 WIP&#10;&#10;Testeando auth0" />
     <MESSAGE value="0.0.11 WIP&#10;&#10;Conexión a auth0 exitosa. Ahora hay que ver como crear y loggear usuarios." />
     <MESSAGE value="0.0.12 WIP&#10;&#10;Se guarda el token de un usuario en la DB, y se está implementando comprobaciones para ver que puede hacer el usuario." />
-    <option name="LAST_COMMIT_MESSAGE" value="0.0.12 WIP&#10;&#10;Se guarda el token de un usuario en la DB, y se está implementando comprobaciones para ver que puede hacer el usuario." />
+    <MESSAGE value="0.0.13 WIP&#10;&#10;Pequeños cambios para ir implementando los permisos" />
+    <option name="LAST_COMMIT_MESSAGE" value="0.0.13 WIP&#10;&#10;Pequeños cambios para ir implementando los permisos" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -405,16 +410,6 @@
           <url>file://$PROJECT_DIR$/src/app/requests.py</url>
           <line>188</line>
           <option name="timeStamp" value="40" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/app/requests.py</url>
-          <line>88</line>
-          <option name="timeStamp" value="41" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/app/requests.py</url>
-          <line>89</line>
-          <option name="timeStamp" value="42" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -6,7 +6,6 @@ import app.requests as requests
 from src.app.utils import VerifyToken
 from src.app.config import get_metadata
 
-
 # CONFIGURACIÓN
 
 
@@ -69,13 +68,16 @@ def create_cont(
 ):
     # Ver como vincular un contenedor a un usuario de manera privada y segura
     # Primero nos fijamos si el cliente existe
-    response = requests.new_cont(client_id if client_id else auth_result["sub"], cont_id, name, owner)
-    if response == -1:
-        raise HTTPException(status_code=400, detail="El contenedor ingresado ya existe.")
-    if response == -2:
-        raise HTTPException(status_code=404, detail="No se encontró el cliente")
-    if owner:
-        auth.register_owner(client_id if client_id else auth_result["sub"])
+    if cont_id:
+        response = requests.new_cont(client_id if client_id else auth_result["sub"], cont_id, name, owner)
+        if response == -1:
+            raise HTTPException(status_code=400, detail="El contenedor ingresado ya existe.")
+        if response == -2:
+            raise HTTPException(status_code=404, detail="No se encontró el cliente")
+        if owner:
+            auth.register_owner(client_id if client_id else auth_result["sub"])
+    else:
+        raise HTTPException(status_code=400, detail="Debe ingresar el ID de un contenedor.")
     return {"status": "El contenedor fue creado con éxito."}
 
 
@@ -85,7 +87,8 @@ def create_cont(
                      "También sirve para ver que clientes tiene asociado.")
 def status_cont(cont_id: int | None = None,
                 show_status: bool | None = True,
-                show_vigias: bool | None = True # Esto debería mostrarlo solo si lo está viendo el dueño del cont
+                show_vigias: bool | None = True,  # Esto debería mostrarlo solo si lo está viendo el dueño del cont
+                auth_result: str = Security(auth.verify)
                 ):
     status = requests.cont_status(cont_id)
     if status == -1:
@@ -108,20 +111,25 @@ def status_cont(cont_id: int | None = None,
         contStatus = "No info"
     if clients:
         if show_vigias:
-            clientList = []
-            for client in clients:
-                clientList.append(Client(
-                    name=client["title"],
-                    id=client["user_id"]
-                ))
-            if show_status:
-                result = ContStatus(
-                    status=contStatus,
-                    clients=clientList
-                )
+            # Vemos los permisos antes de devolver el estado. Solo debería devolverlo si lo está pidiendo el dueño
+            # del container, o si es un usuario asignado a él.
+            if requests.check_ownership(auth_result["sub"], cont_id):
+                clientList = []
+                for client in clients:
+                    clientList.append(Client(
+                        name=client["title"],
+                        id=client["user_id"]
+                    ))
+                if show_status:
+                    result = ContStatus(
+                        status=contStatus,
+                        clients=clientList
+                    )
+                else:
+                    result = clientList
+                return result
             else:
-                result = clientList
-            return result
+                raise HTTPException(status_code=403, detail="Solo el dueño pero ver los vigias asociados al contenedor")
         else:
             return contStatus
     else:
@@ -214,10 +222,7 @@ def get_status(
 ):
     # Si se ingresa un usuario específico va a tener prioridad este,
     # si no se usa el usuario de la cuenta que hace el request
-    if client_id:
-        contStatus = requests.status_cont_client(client_id)
-    else:
-        contStatus = requests.status_cont_client(auth_result["sub"])
+    contStatus = requests.status_cont_client(client_id if client_id else auth_result["sub"])
     if contStatus == -1:
         raise HTTPException(status_code=404, detail="No se encontró el cliente.")
     if return_vigias:
@@ -258,11 +263,14 @@ def get_status(
 # credenciales que se usaron para logguearse. Asi que no se deberían poder crear cuentas ilegítimas.
 @app.post("/client/create/", name="Crear cliente", tags=["Client"],
           description="Registra un cliente en la base de datos cuando se loggea por primera vez.")
-def create_client(auth_result: str = Security(auth.verify)):
+def create_client(
+        auth_result: str = Security(auth.verify),
+        name: str | None = None
+):
     try:
         username = auth_result["nickname"]
     except:
-        username = "Usuario"
+        username = name if name else "Usuario"
     result = requests.create_new_client(username, auth_result["sub"])
     if result == -1:
         raise HTTPException(status_code=400, detail="El cliente ya está registrado en la base de datos.")
