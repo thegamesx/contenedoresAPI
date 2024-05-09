@@ -63,17 +63,21 @@ def create_cont(
         cont_id: int | None = None,
         client_id: int | None = None,
         name: str | None = None,
-        owner: bool | None = False,
+        owner: bool | None = True,  # Vamos a suponer que si alguien registra un contenedor va a ser el dueño.
         auth_result: str = Security(auth.verify)
 ):
-    # Ver como vincular un contenedor a un usuario de manera privada y segura
+    # El contenedor solo va a ser vinculado si existen señales. Es una forma de verificar que no se ingrese
+    # cualquier cosa.
     # Primero nos fijamos si el cliente existe
     if cont_id:
         response = requests.new_cont(client_id if client_id else auth_result["sub"], cont_id, name, owner)
         if response == -1:
             raise HTTPException(status_code=400, detail="El contenedor ingresado ya existe.")
         if response == -2:
-            raise HTTPException(status_code=404, detail="No se encontró el cliente")
+            raise HTTPException(status_code=404, detail="No se encontró el cliente.")
+        if response == -3:
+            raise HTTPException(status_code=403,
+                                detail="El contenedor debe estar instalado y funcionando para poder registrarlo.")
         if owner:
             auth.register_owner(client_id if client_id else auth_result["sub"])
     else:
@@ -274,4 +278,4 @@ def create_client(
     result = requests.create_new_client(username, auth_result["sub"])
     if result == -1:
         raise HTTPException(status_code=400, detail="El cliente ya está registrado en la base de datos.")
-    return {"results": result}
+    return {"status": result}

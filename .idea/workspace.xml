@@ -7,6 +7,7 @@
     <list default="true" id="26cf6396-54b6-4961-ae32-9550231989db" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/API.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/API.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/requests.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/requests.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -340,7 +341,15 @@
       <option name="project" value="LOCAL" />
       <updated>1714488244383</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="0.0.14 WIP&#10;&#10;Deberian estar todos los permisos ahi. Hay que ver como testearlos">
+      <option name="closed" value="true" />
+      <created>1715006697970</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1715006697970</updated>
+    </task>
+    <option name="localTasksCounter" value="22" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -361,54 +370,55 @@
     <MESSAGE value="0.0.11 WIP&#10;&#10;Conexión a auth0 exitosa. Ahora hay que ver como crear y loggear usuarios." />
     <MESSAGE value="0.0.12 WIP&#10;&#10;Se guarda el token de un usuario en la DB, y se está implementando comprobaciones para ver que puede hacer el usuario." />
     <MESSAGE value="0.0.13 WIP&#10;&#10;Pequeños cambios para ir implementando los permisos" />
-    <option name="LAST_COMMIT_MESSAGE" value="0.0.13 WIP&#10;&#10;Pequeños cambios para ir implementando los permisos" />
+    <MESSAGE value="0.0.14 WIP&#10;&#10;Deberian estar todos los permisos ahi. Hay que ver como testearlos" />
+    <option name="LAST_COMMIT_MESSAGE" value="0.0.14 WIP&#10;&#10;Deberian estar todos los permisos ahi. Hay que ver como testearlos" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/app/requests.py</url>
-          <line>164</line>
+          <line>162</line>
           <option name="timeStamp" value="18" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/app/requests.py</url>
-          <line>153</line>
+          <line>151</line>
           <option name="timeStamp" value="21" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/app/requests.py</url>
-          <line>131</line>
+          <line>129</line>
           <option name="timeStamp" value="22" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/app/requests.py</url>
-          <line>46</line>
+          <line>47</line>
           <option name="timeStamp" value="24" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/app/requests.py</url>
-          <line>30</line>
+          <line>31</line>
           <option name="timeStamp" value="36" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/app/requests.py</url>
-          <line>20</line>
+          <line>21</line>
           <option name="timeStamp" value="37" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/app/requests.py</url>
-          <line>190</line>
+          <line>187</line>
           <option name="timeStamp" value="38" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/app/requests.py</url>
-          <line>191</line>
+          <line>188</line>
           <option name="timeStamp" value="39" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/app/requests.py</url>
-          <line>188</line>
+          <line>185</line>
           <option name="timeStamp" value="40" />
         </line-breakpoint>
       </breakpoints>

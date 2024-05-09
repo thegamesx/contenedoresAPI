@@ -1,5 +1,6 @@
 from datetime import datetime
 from .databaseCommands import db_select, db_insert, db_delete, db_update
+# TODO: Ver si es necesario implementar este archivo
 import src.app.logic as logic
 
 defrost_default = 60
@@ -56,7 +57,7 @@ def link_cont_to_client(contID, clientID, owner=False):
 
 # Ingresa un contenedor al sistema, creando todas las relaciones necesarias. Es necesario asignar un cliente como minimo
 # TODO: TESTEAR
-def new_cont(clientID, contID, name, owner=False):
+def new_cont(clientID, contID, name, owner=False, exist=True):
     # Primero nos fijamos si el contenedor ya existe
     data, count = db_select("config", "*", "container_id", contID)
     if count > 0:
@@ -65,6 +66,12 @@ def new_cont(clientID, contID, name, owner=False):
     data, count = db_select("client", "*", "user_id", clientID)
     if count == 0:
         return -2
+    # Por último, vemos si el contenedor tiene señales. Esta es una forma de autenticar el contendor y que no se
+    # ingrese cualquier cosa.
+    if exist:
+        data, count = db_select("signals", "*", "idvigia", contID)
+        if count == 0:
+            return -3
     data, count = db_insert("config", {
         "container_id": contID,
         "display_name": name if name else "Sin nombre",
@@ -72,15 +79,6 @@ def new_cont(clientID, contID, name, owner=False):
     })
     link_cont_to_client(contID, clientID, owner)
     return data
-
-
-# Vincula a un cliente con un contenedor.
-# TODO: Testear
-def assign_cont(clientID, contID, name):
-    result = new_cont(clientID, contID, name)
-    if result == -1:
-        result = link_cont_to_client(contID, clientID)
-    return result
 
 
 # Cambia el nombre de un contenedor
@@ -156,7 +154,7 @@ def cont_status(containerID):
         return status
 
 
-# Se fija que clientes están asignado a un contenedor en particular
+# Se fija que clientes están asignados a un contenedor en particular
 def cont_assigned(contID):
     clients, count = db_select("config", "relation(*)", "container_id", contID)
     clientList = []
@@ -167,7 +165,6 @@ def cont_assigned(contID):
 
 
 # Devuelve el estados de todos los contenedores asignados a una cuenta
-# TODO: Programar errores, que pasa si no existe el cliente o si no tiene contenedores asignados
 def status_cont_client(clientID):
     relation, count = db_select("client", "relation(*)", "user_id", clientID)
     if count == 0:
@@ -192,7 +189,7 @@ def check_ownership(clientID, contID):
     return False
 
 
-# Crea un cliente. Usa el id del Auth0 como identificador.
+# Crea un cliente. Usa el ID del Auth0 como identificador.
 def create_new_client(name, clientID):
     # Primero nos fijamos si existe
     data, count = db_select("client", "*", "user_id", clientID)
