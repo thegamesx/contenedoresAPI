@@ -4,12 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="26cf6396-54b6-4961-ae32-9550231989db" name="Changes" comment="0.1.1&#10;&#10;Se arreglaron un par de errores chicos antes del testeo inicial">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/API.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/API.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/databaseCommands.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/databaseCommands.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/requests.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/requests.py" afterDir="false" />
-    </list>
+    <list default="true" id="26cf6396-54b6-4961-ae32-9550231989db" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -374,7 +369,15 @@
       <option name="project" value="LOCAL" />
       <updated>1715692289446</updated>
     </task>
-    <option name="localTasksCounter" value="25" />
+    <task id="LOCAL-00025" summary="0.1.1&#10;&#10;Se arreglaron un par de errores chicos antes del testeo inicial">
+      <option name="closed" value="true" />
+      <created>1715692615520</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1715692615520</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
