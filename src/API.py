@@ -1,10 +1,9 @@
 from fastapi import FastAPI, HTTPException, Query, Security
 from fastapi.middleware.cors import CORSMiddleware
-from typing_extensions import Annotated
 from pydantic import BaseModel
 import app.requests as requests
-from src.app.utils import VerifyToken
-from src.app.config import get_metadata
+from app.utils import VerifyToken
+from app.config import get_metadata
 
 # CONFIGURACIÓN
 

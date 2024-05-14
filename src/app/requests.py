@@ -1,7 +1,5 @@
 from datetime import datetime
 from .databaseCommands import db_select, db_insert, db_delete, db_update
-# TODO: Ver si es necesario implementar este archivo
-import src.app.logic as logic
 
 defrost_default = 60
 

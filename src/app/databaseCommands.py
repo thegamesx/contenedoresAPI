@@ -1,4 +1,4 @@
-from src.app.utils import Connect
+from .utils import Connect
 
 connection = Connect()
 db = connection.connect()
