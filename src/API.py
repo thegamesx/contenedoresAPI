@@ -37,7 +37,7 @@ class Container(BaseModel):
 
 class Client(BaseModel):
     name: str
-    id: int
+    id: str
 
 
 class ContainerList(BaseModel):
@@ -121,7 +121,7 @@ def status_cont(cont_id: int | None = None,
                 clientList = []
                 for client in clients:
                     clientList.append(Client(
-                        name=client["title"],
+                        name=client["name"],
                         id=client["user_id"]
                     ))
                 if show_status:
@@ -250,7 +250,7 @@ def get_status(
                 clientList = []
                 for client in clients:
                     clientList.append(Client(
-                        name=client["title"],
+                        name=client["name"],
                         id=client["user_id"]
                     ))
                 contWithVigias = ContStatus(
