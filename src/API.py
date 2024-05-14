@@ -37,7 +37,7 @@ class Container(BaseModel):
 
 class Client(BaseModel):
     name: str
-    id: int
+    id: str
 
 
 class ContainerList(BaseModel):
@@ -61,7 +61,7 @@ class StatusList(BaseModel):
                       "(por defecto es la cuenta loggeada), pero luego se pueden vincular nuevos o modificarlos.")
 def create_cont(
         cont_id: int | None = None,
-        client_id: int | None = None,
+        client_id: str | None = None,
         name: str | None = None,
         owner: bool | None = True,  # Vamos a suponer que si alguien registra un contenedor va a ser el dueño.
         auth_result: str = Security(auth.verify)
@@ -121,7 +121,7 @@ def status_cont(cont_id: int | None = None,
                 clientList = []
                 for client in clients:
                     clientList.append(Client(
-                        name=client["title"],
+                        name=client["name"],
                         id=client["user_id"]
                     ))
                 if show_status:
@@ -194,7 +194,7 @@ def update_cont(
                       "sino puede usar el comando de crear contenedor.")
 def link_cont(
         cont_id: int,
-        vigia_id: int,
+        vigia_id: str,
         auth_result: str = Security(auth.verify, scopes=['add:vigia'])
 ):
     # Solo el dueño del contenedor puede vincular, asi que chequeamos eso primero
@@ -212,7 +212,7 @@ def link_cont(
 
 
 # TODO: Ver bien los errores
-@app.get("/client/status/{client_id}", name="Estado contenedores de un cliente", tags=["Client"],
+@app.get("/client/status/", name="Estado contenedores de un cliente", tags=["Client"],
          description="Devuelve el estado de todos los contenedores de un cliente.\n"
                      "Por defecto devuelve los contenedores asociados al usuario registrado, pero se puede"
                      "especificar uno diferente. Si se hace, ese va a tener prioridad.\n"
@@ -250,7 +250,7 @@ def get_status(
                 clientList = []
                 for client in clients:
                     clientList.append(Client(
-                        name=client["title"],
+                        name=client["name"],
                         id=client["user_id"]
                     ))
                 contWithVigias = ContStatus(
