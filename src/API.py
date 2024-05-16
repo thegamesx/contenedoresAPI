@@ -196,13 +196,13 @@ def update_cont(
                       "sino puede usar el comando de crear contenedor.")
 def link_cont(
         cont_id: int,
-        vigia_id: str,
+        vigia_name: str,
         auth_result: str = Security(auth.verify)
         # auth_result: str = Security(auth.verify, scopes=['add:vigia'])
 ):
     # Solo el dueño del contenedor puede vincular, asi que chequeamos eso primero
     if requests.check_ownership(auth_result["sub"], cont_id):
-        response = requests.link_cont_to_client(cont_id, vigia_id)
+        response = requests.link_cont_to_client(cont_id, vigia_name)
         if response == -1:
             raise HTTPException(status_code=404, detail="No se encontró el usuario.")
         if response == -2:
@@ -268,11 +268,13 @@ def get_status(
 
 # No creo que sea necesario incrementar los permisos de este comando, ya que solo crea una cuenta usando las
 # credenciales que se usaron para logguearse. Asi que no se deberían poder crear cuentas ilegítimas.
-@app.post("/client/create/", name="Crear cliente", tags=["Client"],
-          description="Registra un cliente en la base de datos cuando se loggea por primera vez.")
+@app.post("/client/create/{name}", name="Crear cliente", tags=["Client"],
+          description="Registra un cliente en la base de datos cuando se loggea por primera vez.\n"
+                      "Se debe ingresar un nombre, y este debe ser único entre todos los usuarios."
+                      "Este nombre va a ser usado como identificador para enlazar al usuario a un contenedor.")
 def create_client(
+        name: str,
         auth_result: str = Security(auth.verify),
-        name: str | None = None,
 ):
     if name:
         checkDuplicate = requests.check_client_exists(username=name)
@@ -290,7 +292,8 @@ def create_client(
 
 
 @app.get("/client/account/", name="Datos de la cuenta", tags=["Client"],
-         description="Se usa para verificar si un usuario existe y que permisos tiene.")
+         description="Se usa para verificar si un usuario existe y que permisos tiene.\n"
+                     "Por defecto se usa el de la cuenta, pero se puede especificar uno si es necesario.")
 def check_client(
         auth_result: str = Security(auth.verify),
         userID: str | None = None

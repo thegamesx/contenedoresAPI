@@ -32,8 +32,8 @@ def clear_history(contID):
 
 
 # Vincula un contenedor a un cliente. Ambos deben existir.
-def link_cont_to_client(contID, clientID, owner=False):
-    data, count = db_select("client", "*", "user_id", clientID)
+def link_cont_to_client(contID, clientUsername, owner=False):
+    data, count = db_select("client", "*", "name", clientUsername)
     if count == 0:
         return -1
     followedID = data[0]["id"]
