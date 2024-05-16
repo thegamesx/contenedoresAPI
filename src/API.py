@@ -78,7 +78,7 @@ def create_cont(
             raise HTTPException(status_code=403,
                                 detail="El contenedor debe estar instalado y funcionando para poder registrarlo.")
         if owner:
-            pass # Cambiar esto una vez que ande la env management api
+            pass  # Cambiar esto una vez que ande la env management api
             # auth.register_owner(client_id if client_id else auth_result["sub"])
     else:
         raise HTTPException(status_code=400, detail="Debe ingresar el ID de un contenedor.")
@@ -272,13 +272,32 @@ def get_status(
           description="Registra un cliente en la base de datos cuando se loggea por primera vez.")
 def create_client(
         auth_result: str = Security(auth.verify),
-        name: str | None = None
+        name: str | None = None,
 ):
-    try:
-        username = auth_result["nickname"]
-    except:
-        username = name if name else "Usuario"
+    if name:
+        checkDuplicate = requests.check_client_exists(username=name)
+        if checkDuplicate == -1:
+            username = name
+        else:
+            raise HTTPException(status_code=400, detail=
+            "El nombre ingresado ya está siendo usado por otro usuario. Ingrese otro nombre.")
+    else:
+        raise HTTPException(status_code=400, detail="Se debe ingresar un nombre de usuario.")
     result = requests.create_new_client(username, auth_result["sub"])
     if result == -1:
-        raise HTTPException(status_code=400, detail="El cliente ya está registrado en la base de datos.")
-    return {"status": result}
+        raise HTTPException(status_code=400, detail="El usuario ya está registrado en la base de datos.")
+    return {"status": "Usuario creado con éxito."}
+
+
+@app.get("/client/account/", name="Datos de la cuenta", tags=["Client"],
+         description="Se usa para verificar si un usuario existe y que permisos tiene.")
+def check_client(
+        auth_result: str = Security(auth.verify),
+        userID: str | None = None
+):
+    # Tiene prioridad el usuario que hace el request, pero se puede especificar otro
+    response = requests.check_client_exists(clientID=userID if userID else auth_result["sub"])
+    if response == -1:
+        return {"status": "El usuario ingresado no existe."}
+    # Ver como devolver los permisos
+    return {"status": "El usuario existe", "name": response["name"]}

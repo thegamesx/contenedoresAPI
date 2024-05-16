@@ -194,4 +194,13 @@ def create_new_client(name, clientID):
     if count > 0:
         return -1
     data, count = db_insert("client", {"name": name, "user_id": clientID})
-    return data
+    return data[0]
+
+
+def check_client_exists(clientID=None,username=None):
+    if (clientID and username) or (not clientID and not username):
+        return -2
+    data, count = db_select("client", "*", "user_id" if clientID else "name", clientID if clientID else username)
+    if count == 0:
+        return -1
+    return data[0]
