@@ -78,7 +78,8 @@ def create_cont(
             raise HTTPException(status_code=403,
                                 detail="El contenedor debe estar instalado y funcionando para poder registrarlo.")
         if owner:
-            auth.register_owner(client_id if client_id else auth_result["sub"])
+            pass # Cambiar esto una vez que ande la env management api
+            # auth.register_owner(client_id if client_id else auth_result["sub"])
     else:
         raise HTTPException(status_code=400, detail="Debe ingresar el ID de un contenedor.")
     return {"status": "El contenedor fue creado con éxito."}
@@ -145,7 +146,8 @@ def status_cont(cont_id: int | None = None,
                         "Mucho cuidado usando esto. Requiere ser el dueño.")
 def delete_cont(
         cont_id: int | None = None,
-        auth_result: str = Security(auth.verify, scopes=['mod:cont'])
+        auth_result: str = Security(auth.verify)
+        # auth_result: str = Security(auth.verify, scopes=['mod:cont'])
 ):
     if requests.check_ownership(auth_result["sub"], cont_id):
         if cont_id:
@@ -166,7 +168,8 @@ def delete_cont(
 def update_cont(
         cont_id: int | None = None,
         display_name: str | None = None,
-        auth_result: str = Security(auth.verify, scopes=['mod:cont'])
+        auth_result: str = Security(auth.verify)
+        #  auth_result: str = Security(auth.verify, scopes=['mod:cont'])
 ):
     assign_request = {}
     if cont_id:
@@ -194,7 +197,8 @@ def update_cont(
 def link_cont(
         cont_id: int,
         vigia_id: str,
-        auth_result: str = Security(auth.verify, scopes=['add:vigia'])
+        auth_result: str = Security(auth.verify)
+        # auth_result: str = Security(auth.verify, scopes=['add:vigia'])
 ):
     # Solo el dueño del contenedor puede vincular, asi que chequeamos eso primero
     if requests.check_ownership(auth_result["sub"], cont_id):
