@@ -222,7 +222,7 @@ def link_cont(
                      "También puede devolver los vigias asociados a cada contenedor. En ese caso se puede desactivar "
                      "mostrar su estado si es necesario.")
 def get_status(
-        client_id: int | None = None,
+        client_id: str | None = None,
         return_status: bool | None = True,
         return_vigias: bool | None = False,
         auth_result: str = Security(auth.verify)

@@ -7,8 +7,6 @@
     <list default="true" id="26cf6396-54b6-4961-ae32-9550231989db" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/API.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/API.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/logic.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/logic.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/requests.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/requests.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -422,7 +420,15 @@
       <option name="project" value="LOCAL" />
       <updated>1715887160696</updated>
     </task>
-    <option name="localTasksCounter" value="31" />
+    <task id="LOCAL-00031" summary="0.1.5&#10;&#10;Se hicieron pequeños cambios">
+      <option name="closed" value="true" />
+      <created>1715950805996</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1715950805996</updated>
+    </task>
+    <option name="localTasksCounter" value="32" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -450,7 +456,8 @@
     <MESSAGE value="0.1.2 WIP&#10;&#10;Se sacaron permisos porque no anda una env variable. Cambiar luego de arreglar eso." />
     <MESSAGE value="0.1.3&#10;&#10;Se acomodó la parte del registro de usuario" />
     <MESSAGE value="0.1.4&#10;&#10;Se hicieron pequeños cambios" />
-    <option name="LAST_COMMIT_MESSAGE" value="0.1.4&#10;&#10;Se hicieron pequeños cambios" />
+    <MESSAGE value="0.1.5&#10;&#10;Se hicieron pequeños cambios" />
+    <option name="LAST_COMMIT_MESSAGE" value="0.1.5&#10;&#10;Se hicieron pequeños cambios" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
