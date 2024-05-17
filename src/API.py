@@ -265,8 +265,10 @@ def get_status(
                 results.statusList.append(contWithVigias)
             else:
                 results.contList.append(currentContainer)
-    return {"status": results}
-    # Programar error
+    if contStatus:
+        return {"status": results}
+    else:
+        raise HTTPException(status_code=404, detail="No hay contenedores asignados al usuario.")
 
 
 # No creo que sea necesario incrementar los permisos de este comando, ya que solo crea una cuenta usando las
