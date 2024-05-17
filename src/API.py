@@ -56,33 +56,19 @@ class StatusList(BaseModel):
 
 
 @app.post("/cont/create/{cont_id}", name="Crear contenedor", tags=["Container"],
-          description="Crea todas las relaciones de un contenedor. Debe proveerse un cliente para vincular "
-                      "(por defecto es la cuenta loggeada), pero luego se pueden vincular nuevos o modificarlos.")
+          description="Crea todas las relaciones de un contenedor. El comando no vincula a un usuario, y este  "
+                      "se usa para ingresar los datos de nuevas placas. Luego se pueden vincular usuarios.\n")
 def create_cont(
-        cont_id: int | None = None,
-        client_id: str | None = None,
+        cont_id: int,
+        password: str,
         name: str | None = None,
-        owner: bool | None = True,  # Vamos a suponer que si alguien registra un contenedor va a ser el dueño.
-        auth_result: str = Security(auth.verify)
+        auth_result: str = Security(auth.verify)  # Debería tener scope de admin
 ):
-    # El contenedor solo va a ser vinculado si existen señales. Es una forma de verificar que no se ingrese
-    # cualquier cosa.
-    # Primero nos fijamos si el cliente existe
-    if cont_id:
-        response = requests.new_cont(client_id if client_id else auth_result["sub"], cont_id, name, owner)
-        if response == -1:
-            raise HTTPException(status_code=400, detail="El contenedor ingresado ya existe.")
-        if response == -2:
-            raise HTTPException(status_code=404, detail="No se encontró el cliente.")
-        if response == -3:
-            raise HTTPException(status_code=403,
-                                detail="El contenedor debe estar instalado y funcionando para poder registrarlo.")
-        if owner:
-            pass  # Cambiar esto una vez que ande la env management api
-            # auth.register_owner(client_id if client_id else auth_result["sub"])
-    else:
-        raise HTTPException(status_code=400, detail="Debe ingresar el ID de un contenedor.")
-    return {"status": "El contenedor fue creado con éxito."}
+    # Vamos a crear el contenedor sin clientes asociados.
+    response = requests.new_cont(cont_id, name, password)
+    if response == -1:
+        raise HTTPException(status_code=400, detail="El contenedor ingresado ya existe.")
+    return {"status": "El contenedor fue creado con éxito.","data": response}
 
 
 @app.get("/cont/status/{cont_id}", name="Estado contenedor", tags=["Container"],
@@ -191,27 +177,30 @@ def update_cont(
         raise HTTPException(status_code=403, detail="Se debe ingresar el id de un contenedor.")
 
 
-@app.post("/cont/link/", name="Vincular contenedor a un vigia", tags=["Container"],
-          description="Vincula un contenedor a un vigia. Ambos deben existir para hacer esto, "
-                      "sino puede usar el comando de crear contenedor y debe ser el dueño.")
+@app.post("/cont/link/", name="Vincular contenedor a un usuario", tags=["Container"],
+          description="Vincula un contenedor a un usuario. Ambos deben existir para hacer esto.\n"
+                      "En la base de datos está el id y la contraseña del contenedor. Deben ingresarse ambos "
+                      "para poder registrar un contenedor a un usuario.\nEl mismo contenedor puede estar asignado "
+                      "a multiples usuarios, si estos tienen acceso a las credenciales.")
 def link_cont(
         cont_id: int,
-        vigia_name: str,
+        password: str,
+        client_id: str | None = None,
         auth_result: str = Security(auth.verify)
         # auth_result: str = Security(auth.verify, scopes=['add:vigia'])
 ):
-    # Solo el dueño del contenedor puede vincular, asi que chequeamos eso primero
-    if requests.check_ownership(auth_result["sub"], cont_id):
-        response = requests.link_cont_to_client(cont_id, vigia_name)
-        if response == -1:
-            raise HTTPException(status_code=404, detail="No se encontró el usuario.")
-        if response == -2:
-            raise HTTPException(status_code=404, detail="No se encontró el contenedor.")
-        if response == -3:
-            raise HTTPException(status_code=400, detail="Este contenedor ya está asignado al vigia.")
-        return {"status": "Se vinculó el contenedor correctamente"}
-    else:
-        raise HTTPException(status_code=400, detail="No puede vincular un contenedor que no es suyo.")
+    # Multiples usuarios se pueden vincular al mismo contenedor. Primero checkeamos la contraseña
+    checkPassword = requests.check_cont_password(cont_id, password)
+    if checkPassword == 0:
+        raise HTTPException(status_code=404, detail="El contenedor ingresado no existe.")
+    elif checkPassword == -1:
+        raise HTTPException(status_code=400, detail="La contraseña es incorrecta. Intentelo de nuevo.")
+    response = requests.link_cont_to_client(cont_id, client_id if client_id else auth_result["sub"])
+    if response == -1:
+        raise HTTPException(status_code=404, detail="No se encontró el usuario.")
+    if response == -2:
+        raise HTTPException(status_code=400, detail="Este contenedor ya está asignado al usuario.")
+    return {"status": "Se vinculó el contenedor correctamente"}
 
 
 # TODO: Ver bien los errores

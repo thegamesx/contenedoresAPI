@@ -34,22 +34,23 @@ def clear_history(contID):
 
 
 # Vincula un contenedor a un cliente. Ambos deben existir.
-def link_cont_to_client(contID, clientUsername, owner=False):
-    data, count = db_select("client", "*", "name", clientUsername)
+def link_cont_to_client(contID, userID, owner=True):
+    data, count = db_select("client", "*", "user_id", userID)
     if count == 0:
         return -1
-    followedID = data[0]["id"]
+    followedUserID = data[0]["id"]
     data, count = db_select("config", "*", "container_id", contID)
     if count == 0:
         return -2
-    followingID = data[0]["id"]
+    followingContID = data[0]["id"]
     # Verificamos que ese contenedor no este asignado a esa cuenta antes de seguir
-    data, count = db_select("relation", "*", match={"following_cont_id": followingID, "followed_user_id": followedID})
+    data, count = db_select("relation", "*",
+                            match={"following_cont_id": followingContID, "followed_user_id": followedUserID})
     if count > 0:
         return -3
     data, count = db_insert("relation", {
-        "following_cont_id": followingID,
-        "followed_user_id": followedID,
+        "following_cont_id": followingContID,
+        "followed_user_id": followedUserID,
         "ownership": owner
     })
     return data
@@ -57,27 +58,17 @@ def link_cont_to_client(contID, clientUsername, owner=False):
 
 # Ingresa un contenedor al sistema, creando todas las relaciones necesarias. Es necesario asignar un cliente como minimo
 # TODO: TESTEAR
-def new_cont(clientID, contID, name, owner=False, exist=True):
+def new_cont(contID, name, password):
     # Primero nos fijamos si el contenedor ya existe
     data, count = db_select("config", "*", "container_id", contID)
     if count > 0:
         return -1
-    # Verificamos que el cliente existe, si no no vamos a poder asignar el contenedor
-    data, count = db_select("client", "*", "user_id", clientID)
-    if count == 0:
-        return -2
-    # Por último, vemos si el contenedor tiene señales. Esta es una forma de autenticar el contendor y que no se
-    # ingrese cualquier cosa.
-    if exist:
-        data, count = db_select("signals", "*", "idvigia", contID)
-        if count == 0:
-            return -3
     data, count = db_insert("config", {
         "container_id": contID,
         "display_name": name if name else "Sin nombre",
-        "signal_id": contID  # Ver si cambiar esto
+        "signal_id": contID,  # Ver si cambiar esto
+        "password": password
     })
-    link_cont_to_client(contID, clientID, owner)
     return data
 
 
@@ -183,10 +174,20 @@ def create_new_client(name, clientID):
     return data[0]
 
 
-def check_client_exists(clientID=None,username=None):
+def check_client_exists(clientID=None, username=None):
     if (clientID and username) or (not clientID and not username):
         return -2
     data, count = db_select("client", "*", "user_id" if clientID else "name", clientID if clientID else username)
     if count == 0:
         return -1
     return data[0]
+
+
+def check_cont_password(contID, password):
+    data, count = db_select("config", "*", "container_id", contID)
+    if count == 1:
+        if data[0]['password'] == password:
+            return True
+        else:
+            return -1
+    return 0

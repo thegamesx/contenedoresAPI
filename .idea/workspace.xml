@@ -7,6 +7,7 @@
     <list default="true" id="26cf6396-54b6-4961-ae32-9550231989db" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/API.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/API.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/requests.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/requests.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -22,11 +23,6 @@
     </option>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_BRANCH_BY_REPOSITORY">
-      <map>
-        <entry key="$PROJECT_DIR$" value="master" />
-      </map>
-    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -35,12 +31,12 @@
     &quot;assignee&quot;: &quot;thegamesx&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/thegamesx/contenedoresAPI.git&quot;,
-    &quot;accountId&quot;: &quot;6690a26f-7e6c-4211-80b7-bb5a77ea9e59&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/thegamesx/contenedoresAPI.git",
+    "accountId": "6690a26f-7e6c-4211-80b7-bb5a77ea9e59"
   }
-}</component>
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 7
 }</component>
@@ -55,11 +51,11 @@
     "Docker.Container API.executor": "Run",
     "Docker.Dockerfile.executor": "Run",
     "Python.main.executor": "Run",
-    "Python.server (1).executor": "Debug",
+    "Python.server (1).executor": "Run",
     "Python.server.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "authtest",
+    "git-widget-placeholder": "master",
     "ignore.virus.scanning.warn.message": "true",
     "settings.editor.selected.configurable": "advanced.settings"
   }
@@ -300,155 +296,12 @@
       <option name="project" value="LOCAL" />
       <updated>1713893046531</updated>
     </task>
-    <task id="LOCAL-00016" summary="0.0.9&#10;&#10;Pequeños cambios antes de testear la implementacion de auth0">
-      <option name="closed" value="true" />
-      <created>1714058761913</created>
-      <option name="number" value="00016" />
-      <option name="presentableId" value="LOCAL-00016" />
-      <option name="project" value="LOCAL" />
-      <updated>1714058761913</updated>
-    </task>
-    <task id="LOCAL-00017" summary="0.0.10 WIP&#10;&#10;Testeando auth0">
-      <option name="closed" value="true" />
-      <created>1714073284482</created>
-      <option name="number" value="00017" />
-      <option name="presentableId" value="LOCAL-00017" />
-      <option name="project" value="LOCAL" />
-      <updated>1714073284482</updated>
-    </task>
-    <task id="LOCAL-00018" summary="0.0.11 WIP&#10;&#10;Conexión a auth0 exitosa. Ahora hay que ver como crear y loggear usuarios.">
-      <option name="closed" value="true" />
-      <created>1714146692153</created>
-      <option name="number" value="00018" />
-      <option name="presentableId" value="LOCAL-00018" />
-      <option name="project" value="LOCAL" />
-      <updated>1714146692153</updated>
-    </task>
-    <task id="LOCAL-00019" summary="0.0.12 WIP&#10;&#10;Se guarda el token de un usuario en la DB, y se está implementando comprobaciones para ver que puede hacer el usuario.">
-      <option name="closed" value="true" />
-      <created>1714411851049</created>
-      <option name="number" value="00019" />
-      <option name="presentableId" value="LOCAL-00019" />
-      <option name="project" value="LOCAL" />
-      <updated>1714411851049</updated>
-    </task>
-    <task id="LOCAL-00020" summary="0.0.13 WIP&#10;&#10;Pequeños cambios para ir implementando los permisos">
-      <option name="closed" value="true" />
-      <created>1714488244383</created>
-      <option name="number" value="00020" />
-      <option name="presentableId" value="LOCAL-00020" />
-      <option name="project" value="LOCAL" />
-      <updated>1714488244383</updated>
-    </task>
-    <task id="LOCAL-00021" summary="0.0.14 WIP&#10;&#10;Deberian estar todos los permisos ahi. Hay que ver como testearlos">
-      <option name="closed" value="true" />
-      <created>1715006697970</created>
-      <option name="number" value="00021" />
-      <option name="presentableId" value="LOCAL-00021" />
-      <option name="project" value="LOCAL" />
-      <updated>1715006697970</updated>
-    </task>
-    <task id="LOCAL-00022" summary="0.1.0&#10;&#10;Se terminaron de implementar las funciones necesarias como para empezar a testear.">
-      <option name="closed" value="true" />
-      <created>1715267081442</created>
-      <option name="number" value="00022" />
-      <option name="presentableId" value="LOCAL-00022" />
-      <option name="project" value="LOCAL" />
-      <updated>1715267081442</updated>
-    </task>
-    <task id="LOCAL-00023" summary="0.1.1&#10;&#10;Se arreglaron un par de errores chicos antes del testeo inicial">
-      <option name="closed" value="true" />
-      <created>1715691787085</created>
-      <option name="number" value="00023" />
-      <option name="presentableId" value="LOCAL-00023" />
-      <option name="project" value="LOCAL" />
-      <updated>1715691787085</updated>
-    </task>
-    <task id="LOCAL-00024" summary="0.1.1&#10;&#10;Se arreglaron un par de errores chicos antes del testeo inicial">
-      <option name="closed" value="true" />
-      <created>1715692289446</created>
-      <option name="number" value="00024" />
-      <option name="presentableId" value="LOCAL-00024" />
-      <option name="project" value="LOCAL" />
-      <updated>1715692289446</updated>
-    </task>
-    <task id="LOCAL-00025" summary="0.1.1&#10;&#10;Se arreglaron un par de errores chicos antes del testeo inicial">
-      <option name="closed" value="true" />
-      <created>1715692615520</created>
-      <option name="number" value="00025" />
-      <option name="presentableId" value="LOCAL-00025" />
-      <option name="project" value="LOCAL" />
-      <updated>1715692615520</updated>
-    </task>
-    <task id="LOCAL-00026" summary="0.1.1&#10;&#10;Se arreglaron un par de errores chicos antes del testeo inicial">
-      <option name="closed" value="true" />
-      <created>1715692944328</created>
-      <option name="number" value="00026" />
-      <option name="presentableId" value="LOCAL-00026" />
-      <option name="project" value="LOCAL" />
-      <updated>1715692944328</updated>
-    </task>
-    <task id="LOCAL-00027" summary="0.1.2&#10;&#10;Test">
-      <option name="closed" value="true" />
-      <created>1715693643418</created>
-      <option name="number" value="00027" />
-      <option name="presentableId" value="LOCAL-00027" />
-      <option name="project" value="LOCAL" />
-      <updated>1715693643418</updated>
-    </task>
-    <task id="LOCAL-00028" summary="0.1.2 WIP&#10;&#10;Se sacaron permisos porque no anda una env variable. Cambiar luego de arreglar eso.">
-      <option name="closed" value="true" />
-      <created>1715818870576</created>
-      <option name="number" value="00028" />
-      <option name="presentableId" value="LOCAL-00028" />
-      <option name="project" value="LOCAL" />
-      <updated>1715818870576</updated>
-    </task>
-    <task id="LOCAL-00029" summary="0.1.3&#10;&#10;Se acomodó la parte del registro de usuario">
-      <option name="closed" value="true" />
-      <created>1715878375720</created>
-      <option name="number" value="00029" />
-      <option name="presentableId" value="LOCAL-00029" />
-      <option name="project" value="LOCAL" />
-      <updated>1715878375720</updated>
-    </task>
-    <task id="LOCAL-00030" summary="0.1.4&#10;&#10;Se hicieron pequeños cambios">
-      <option name="closed" value="true" />
-      <created>1715887160696</created>
-      <option name="number" value="00030" />
-      <option name="presentableId" value="LOCAL-00030" />
-      <option name="project" value="LOCAL" />
-      <updated>1715887160696</updated>
-    </task>
-    <task id="LOCAL-00031" summary="0.1.5&#10;&#10;Se hicieron pequeños cambios">
-      <option name="closed" value="true" />
-      <created>1715950805996</created>
-      <option name="number" value="00031" />
-      <option name="presentableId" value="LOCAL-00031" />
-      <option name="project" value="LOCAL" />
-      <updated>1715950805996</updated>
-    </task>
-    <task id="LOCAL-00032" summary="0.1.5.1&#10;&#10;Se hicieron pequeños cambios">
-      <option name="closed" value="true" />
-      <created>1715951788066</created>
-      <option name="number" value="00032" />
-      <option name="presentableId" value="LOCAL-00032" />
-      <option name="project" value="LOCAL" />
-      <updated>1715951788066</updated>
-    </task>
-    <task id="LOCAL-00033" summary="0.1.5.2&#10;&#10;Test para practicar con la API">
-      <option name="closed" value="true" />
-      <created>1715955925469</created>
-      <option name="number" value="00033" />
-      <option name="presentableId" value="LOCAL-00033" />
-      <option name="project" value="LOCAL" />
-      <updated>1715955925469</updated>
-    </task>
-    <option name="localTasksCounter" value="34" />
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_NEW_TODO" value="false" />
+    <MESSAGE value="0.0.1" />
     <MESSAGE value="0.0.2&#10;&#10;12/4" />
     <MESSAGE value="0.0.3&#10;&#10;15/4" />
     <MESSAGE value="0.0.4&#10;&#10;16/4" />
@@ -459,55 +312,30 @@
     <MESSAGE value="0.0.6&#10;&#10;Se preparó la API para que ande en un docker. Procedemos a testear con el frontend." />
     <MESSAGE value="0.0.7&#10;&#10;Cambie la ubicación de varias cosas, separando la logica de los llamados a la DB. WIP." />
     <MESSAGE value="0.0.8" />
-    <MESSAGE value="0.0.9&#10;&#10;Pequeños cambios antes de testear la implementacion de auth0" />
-    <MESSAGE value="0.0.10 WIP&#10;&#10;Testeando auth0" />
-    <MESSAGE value="0.0.11 WIP&#10;&#10;Conexión a auth0 exitosa. Ahora hay que ver como crear y loggear usuarios." />
-    <MESSAGE value="0.0.12 WIP&#10;&#10;Se guarda el token de un usuario en la DB, y se está implementando comprobaciones para ver que puede hacer el usuario." />
-    <MESSAGE value="0.0.13 WIP&#10;&#10;Pequeños cambios para ir implementando los permisos" />
-    <MESSAGE value="0.0.14 WIP&#10;&#10;Deberian estar todos los permisos ahi. Hay que ver como testearlos" />
-    <MESSAGE value="0.1.0&#10;&#10;Se terminaron de implementar las funciones necesarias como para empezar a testear." />
-    <MESSAGE value="0.1.1&#10;&#10;Se arreglaron un par de errores chicos antes del testeo inicial" />
-    <MESSAGE value="0.1.2&#10;&#10;Test" />
-    <MESSAGE value="0.1.2 WIP&#10;&#10;Se sacaron permisos porque no anda una env variable. Cambiar luego de arreglar eso." />
-    <MESSAGE value="0.1.3&#10;&#10;Se acomodó la parte del registro de usuario" />
-    <MESSAGE value="0.1.4&#10;&#10;Se hicieron pequeños cambios" />
-    <MESSAGE value="0.1.5&#10;&#10;Se hicieron pequeños cambios" />
-    <MESSAGE value="0.1.5.1&#10;&#10;Se hicieron pequeños cambios" />
-    <MESSAGE value="0.1.5.2&#10;&#10;Test para practicar con la API" />
-    <option name="LAST_COMMIT_MESSAGE" value="0.1.5.2&#10;&#10;Test para practicar con la API" />
+    <option name="LAST_COMMIT_MESSAGE" value="0.0.8" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/app/requests.py</url>
-          <line>146</line>
+          <line>154</line>
           <option name="timeStamp" value="18" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/app/requests.py</url>
-          <line>171</line>
-          <option name="timeStamp" value="38" />
+          <line>143</line>
+          <option name="timeStamp" value="21" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/app/requests.py</url>
-          <line>172</line>
-          <option name="timeStamp" value="39" />
+          <line>121</line>
+          <option name="timeStamp" value="22" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/app/requests.py</url>
-          <line>169</line>
-          <option name="timeStamp" value="40" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/API.py</url>
-          <line>122</line>
-          <option name="timeStamp" value="41" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/API.py</url>
-          <line>267</line>
-          <option name="timeStamp" value="42" />
+          <line>187</line>
+          <option name="timeStamp" value="25" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -515,8 +343,6 @@
       <configuration name="PythonConfigurationType">
         <watch expression="data" />
         <watch expression="row" />
-        <watch expression="token" />
-        <watch expression="decoded_info" />
       </configuration>
     </watches-manager>
   </component>
