@@ -91,7 +91,7 @@ def create_cont(
                      "También sirve para ver que clientes tiene asociado.")
 def status_cont(cont_id: int | None = None,
                 show_status: bool | None = True,
-                show_vigias: bool | None = True,  # Esto debería mostrarlo solo si lo está viendo el dueño del cont
+                show_vigias: bool | None = True,  # Esto lo muestra solo si lo está viendo el dueño del cont
                 auth_result: str = Security(auth.verify)
                 ):
     status = requests.cont_status(cont_id)
@@ -193,7 +193,7 @@ def update_cont(
 
 @app.post("/cont/link/", name="Vincular contenedor a un vigia", tags=["Container"],
           description="Vincula un contenedor a un vigia. Ambos deben existir para hacer esto, "
-                      "sino puede usar el comando de crear contenedor.")
+                      "sino puede usar el comando de crear contenedor y debe ser el dueño.")
 def link_cont(
         cont_id: int,
         vigia_name: str,
@@ -227,6 +227,8 @@ def get_status(
         return_vigias: bool | None = False,
         auth_result: str = Security(auth.verify)
 ):
+    if not return_status and not return_vigias:
+        raise HTTPException(status_code=400, detail="No hay información para mostrar.")
     # Si se ingresa un usuario específico va a tener prioridad este,
     # si no se usa el usuario de la cuenta que hace el request
     contStatus = requests.status_cont_client(client_id if client_id else auth_result["sub"])
@@ -292,15 +294,22 @@ def create_client(
 
 
 @app.get("/client/account/", name="Datos de la cuenta", tags=["Client"],
-         description="Se usa para verificar si un usuario existe y que permisos tiene.\n"
+         description="Se usa para verificar si un usuario existe y que permisos tiene (WIP).\n"
                      "Por defecto se usa el de la cuenta, pero se puede especificar uno si es necesario.")
 def check_client(
         auth_result: str = Security(auth.verify),
-        userID: str | None = None
+        user_id: str | None = None
 ):
     # Tiene prioridad el usuario que hace el request, pero se puede especificar otro
-    response = requests.check_client_exists(clientID=userID if userID else auth_result["sub"])
+    response = requests.check_client_exists(clientID=user_id if user_id else auth_result["sub"])
     if response == -1:
-        return {"status": "El usuario ingresado no existe."}
+        raise HTTPException(status_code=404, detail="El usuario ingresado no existe.")
     # Ver como devolver los permisos
     return {"status": "El usuario existe", "name": response["name"]}
+
+
+# TEST: Comando sin permisos
+
+@app.get("/public/")
+def public_message():
+    return {"message": "Si lees esto sos puto"}

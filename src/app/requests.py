@@ -1,5 +1,6 @@
 from datetime import datetime
 from .databaseCommands import db_select, db_insert, db_delete, db_update
+from .logic import convert_date, controller_status
 
 defrost_default = 60
 
@@ -15,6 +16,7 @@ def delete_last_signals(cont_id):
 """
 
 
+# Elimina un contenedor, incluyendo todas sus relaciones y señales.
 def del_cont(contID):
     history_cleared = clear_history(contID)
     relationsCount = db_delete("relation", "following_cont_id", contID)
@@ -22,7 +24,7 @@ def del_cont(contID):
     return [relationsCount, configCount, history_cleared]
 
 
-# Limpia el historial de un contenedor. Usar en caso de error o cambios, porque el historial se va a purgar regularmente.
+# Limpia el historial de un contenedor. Usar en caso de error o cambios, porque el historial se va a purgar regularmente
 # Mucho cuidado con usar este comando, ya que no reversible. Probablemente quede como comando administrativo.
 def clear_history(contID):
     data, count = db_select("config", "signal_id", "container_id", contID)
@@ -106,22 +108,6 @@ def check_hour_status(containerID, field, checkIfTrue):
             return True
 
 
-def convert_date(dateStr):
-    strippedDate = dateStr[:-6]
-    return datetime.strptime(strippedDate, "%Y-%m-%dT%H:%M:%S.%f")
-
-
-# Verifica que el controlador este mandando señales. Si no mandó una por 35m devuelve un error
-def controller_status(lastSignal):
-    timeNow = datetime.now()
-    lastSignalDT = convert_date(lastSignal)
-    timeDelta = timeNow - lastSignalDT
-    if timeDelta.total_seconds() / 60 > 35:
-        return True
-    else:
-        return False
-
-
 # Devuelve el estado de un contenedor en particular
 def cont_status(containerID):
     data, count = db_select("signals", "*", "idvigia", containerID, setLimit=1)
@@ -162,7 +148,7 @@ def cont_assigned(contID):
     return clientList
 
 
-# Devuelve el estados de todos los contenedores asignados a una cuenta
+# Devuelve el estado de todos los contenedores asignados a una cuenta
 def status_cont_client(clientID):
     relation, count = db_select("client", "relation(*)", "user_id", clientID)
     if count == 0:
