@@ -266,6 +266,7 @@ def get_status(
             else:
                 results.contList.append(currentContainer)
     return {"status": results}
+    # Programar error
 
 
 # No creo que sea necesario incrementar los permisos de este comando, ya que solo crea una cuenta usando las
@@ -308,8 +309,15 @@ def check_client(
     return {"status": "El usuario existe", "name": response["name"]}
 
 
-# TEST: Comando sin permisos
+# TEST: Comando para practicar la API
 
 @app.get("/public/")
 def public_message():
     return {"message": "Si lees esto sos puto"}
+
+
+@app.get("/private/")
+def private_message(
+        auth_result: str = Security(auth.verify)
+):
+    return {"message": "Este mensaje es super privado y el que lo lee es super puto", "token": auth_result}
