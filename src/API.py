@@ -277,12 +277,14 @@ def create_client(
          description="Se usa para verificar si un usuario existe y que permisos tiene (WIP).\n"
                      "Por defecto se usa el de la cuenta, pero se puede especificar uno si es necesario.")
 def check_client(
-        user_id: str | None = None
+        user_id: str
 ):
     # Tiene prioridad el usuario que hace el request, pero se puede especificar otro
     response = requests.check_client_exists(clientID=user_id)
     if response == -1:
         raise HTTPException(status_code=404, detail="El usuario ingresado no existe.")
+    if response == -2:
+        raise HTTPException(status_code=422, detail="No se puede procesar.")
     # Ver como devolver los permisos
     return {"status": "El usuario existe", "name": response["name"]}
 
