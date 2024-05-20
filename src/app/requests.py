@@ -1,19 +1,8 @@
 from datetime import datetime
 from .databaseCommands import db_select, db_insert, db_delete, db_update
-from .logic import convert_date, controller_status
+from .logic import controller_status, check_hour_status
 
 defrost_default = 60
-
-""" Esto se puede hacer directo en supabase. Averiguar
-# Limpia las señales antiguas. El valor por defecto es 20
-def delete_last_signals(cont_id):
-    db = connect()
-    data, count = (db.table("signals").
-                   select("*", count='exact').
-                   order("id", desc=True). #Ver si poner la fecha en vez de las id.
-                   eq("idvigia", cont_id).
-                   limit(1).execute())
-"""
 
 
 # Elimina un contenedor, incluyendo todas sus relaciones y señales.
@@ -56,7 +45,7 @@ def link_cont_to_client(contID, userID, owner=True):
     return data
 
 
-# Ingresa un contenedor al sistema, creando todas las relaciones necesarias. Es necesario asignar un cliente como minimo
+# Ingresa un contenedor al sistema, creando todas las relaciones necesarias.
 # TODO: TESTEAR
 def new_cont(contID, name, password):
     # Primero nos fijamos si el contenedor ya existe
@@ -84,24 +73,10 @@ def name_cont(contID, name):
         return -1
 
 
-# Comprueba si el defrost o el compresor está en un estado normal. De no ser así, se activa una alarma
-# Se manda el campo a checkear en field, y la condición normal en checkIfTrue, ya que son opuestas
-def check_hour_status(containerID, field, checkIfTrue):
-    data, count = db_select("signals", "*", "idvigia", containerID, setOrder="date", setLimit=20)
-    timeNow = datetime.now()
-    # TODO: Ver si esto funciona correctamente
-    for row in data:
-        if row[field] == checkIfTrue:
-            return False
-        registeredDate = convert_date(row["date"])
-        timeDelta = timeNow - registeredDate
-        if timeDelta.total_seconds() / 60 > 60:
-            return True
-
-
 # Devuelve el estado de un contenedor en particular
+# TODO: Revisar y testear las señales
 def cont_status(containerID):
-    data, count = db_select("signals", "*", "idvigia", containerID, setLimit=1)
+    data, count = db_select("signals", "*", "idvigia", containerID, setLimit=20)
     if count == 0:
         return -1
     else:
@@ -109,14 +84,14 @@ def cont_status(containerID):
         alarma = defrost = False
         if controller_status(status["date"]):
             alarma = True
-        if not status["defrost"]:
-            defrost_status = check_hour_status(containerID, "defrost", False)
+        if status["defrost"]:
+            defrost_status = check_hour_status(data, "defrost", True)
             if defrost_status:
                 alarma = True
             else:
                 defrost = True
         if not status["arranque_comp"]:
-            compresor_status = check_hour_status(containerID, "arranque_comp", True)
+            compresor_status = check_hour_status(data, "arranque_comp", True)
             if compresor_status:
                 alarma = True
         if status["bateria"]:
@@ -153,6 +128,7 @@ def status_cont_client(clientID):
 
 
 # Verifica si el contenedor pertenece al usuario
+# TODO: Ver si es necesario mantener esto. Cambiaron las especificaciones.
 def check_ownership(clientID, contID):
     dataClient, count = db_select("client", "relation(*)", "user_id", clientID)
     for rowClient in dataClient:

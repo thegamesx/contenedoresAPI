@@ -185,7 +185,7 @@ def update_cont(
 def link_cont(
         cont_id: int,
         password: str,
-        client_id: str | None = None,
+        user_id: str | None = None,
         auth_result: str = Security(auth.verify)
         # auth_result: str = Security(auth.verify, scopes=['add:vigia'])
 ):
@@ -195,7 +195,7 @@ def link_cont(
         raise HTTPException(status_code=404, detail="El contenedor ingresado no existe.")
     elif checkPassword == -1:
         raise HTTPException(status_code=400, detail="La contraseña es incorrecta. Intentelo de nuevo.")
-    response = requests.link_cont_to_client(cont_id, client_id if client_id else auth_result["sub"])
+    response = requests.link_cont_to_client(cont_id, user_id if user_id else auth_result["sub"])
     if response == -1:
         raise HTTPException(status_code=404, detail="No se encontró el usuario.")
     if response == -2:
@@ -211,7 +211,7 @@ def link_cont(
                      "También puede devolver los vigias asociados a cada contenedor. En ese caso se puede desactivar "
                      "mostrar su estado si es necesario.")
 def get_status(
-        client_id: str | None = None,
+        user_id: str | None = None,
         return_status: bool | None = True,
         return_vigias: bool | None = False,
         auth_result: str = Security(auth.verify)
@@ -220,7 +220,7 @@ def get_status(
         raise HTTPException(status_code=400, detail="No hay información para mostrar.")
     # Si se ingresa un usuario específico va a tener prioridad este,
     # si no se usa el usuario de la cuenta que hace el request
-    contStatus = requests.status_cont_client(client_id if client_id else auth_result["sub"])
+    contStatus = requests.status_cont_client(user_id if user_id else auth_result["sub"])
     if contStatus == -1:
         raise HTTPException(status_code=404, detail="No se encontró el cliente.")
     if return_vigias:
