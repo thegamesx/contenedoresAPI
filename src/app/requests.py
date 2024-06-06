@@ -6,11 +6,11 @@ defrost_default = 60
 
 
 # Elimina un contenedor, incluyendo todas sus relaciones y señales.
-def del_cont(contID):
+def del_cont(contID, delCont=False):
     history_cleared = clear_history(contID)
     relationsCount = db_delete("relation", "following_cont_id", contID)
-    configCount = db_delete("config", "container_id", contID)
-    return [relationsCount, configCount, history_cleared]
+    configCount = False
+    return [relationsCount, history_cleared]
 
 
 # Limpia el historial de un contenedor. Usar en caso de error o cambios, porque el historial se va a purgar regularmente

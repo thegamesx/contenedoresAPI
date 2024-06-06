@@ -128,8 +128,8 @@ def status_cont(cont_id: int | None = None,
 
 # Ver los permisos SSL en la db, actualmente no funciona este comando
 @app.delete("/cont/delete/{cont_id}", name="Eliminar contenedor", tags=["Container"],
-            description="Elimina un contenedor, incluyendo todas sus señales y configuraciones.\n"
-                        "Mucho cuidado usando esto. Requiere ser el dueño.")
+            description="Elimina todas sus señales y relaciones de un contenedor.\n"
+                        "Mucho cuidado usando esto. Solo se pueden eliminar los contenedores enlazados a su cuenta.")
 def delete_cont(
         cont_id: int | None = None,
         auth_result: str = Security(auth.verify)
@@ -141,7 +141,7 @@ def delete_cont(
             if results[0] == 0 and results[1] == 0:
                 raise HTTPException(status_code=404, detail="No se encontró el contenedor")
             else:
-                return {"associations_deleted": results[0], "config_deleted": results[1], "signals_deleted": results[2]}
+                return {"associations_deleted": results[0], "signals_deleted": results[1]}
         else:
             raise HTTPException(status_code=400, detail="No se ingresó un numero de contenedor")
     else:

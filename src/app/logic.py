@@ -3,7 +3,11 @@ from datetime import datetime
 
 def convert_date(dateStr):
     strippedDate = dateStr[:-6]
-    return datetime.strptime(strippedDate, "%Y-%m-%dT%H:%M:%S.%f")
+    # Se incorporó este try para testear fechas ingresadas manualmente.
+    try:
+        return datetime.strptime(strippedDate, "%Y-%m-%dT%H:%M:%S.%f")
+    except:
+        return datetime.strptime(strippedDate, "%Y-%m-%dT%H:%M:%S")
 
 
 # Verifica que el controlador este mandando señales. Si no mandó una por 35m devuelve un error
@@ -15,6 +19,7 @@ def controller_status(lastSignal):
         return True
     else:
         return False
+
 
 # Comprueba si el defrost o el compresor está en un estado normal. De no ser así, se activa una alarma
 # Se manda el campo a checkear en field, y la condición normal en checkIfTrue, ya que son opuestas
