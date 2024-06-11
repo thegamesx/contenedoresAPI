@@ -31,6 +31,7 @@ class Container(BaseModel):
     arranque_comp: bool
     bateria: bool
     alarma: bool
+    alarma_detail: list[str] = []
     defrost_status: bool
 
 
@@ -68,16 +69,18 @@ def create_cont(
     response = requests.new_cont(cont_id, name, password)
     if response == -1:
         raise HTTPException(status_code=400, detail="El contenedor ingresado ya existe.")
-    return {"status": "El contenedor fue creado con éxito.","data": response}
+    return {"status": "El contenedor fue creado con éxito.", "data": response}
 
 
 @app.get("/cont/status/{cont_id}", name="Estado contenedor", tags=["Container"],
          description="Devuelve el estado de un contenedor especifico. Normalmente se usa el de clientes, "
                      "pero si se necesita solo ver el estado de un contenedor especifico se puede usar este.\n"
-                     "También sirve para ver que clientes tiene asociado.")
+                     "Se puede usar el detailed_alarm para ver que alarmas saltan en especifico.\n"
+                     "También se puede usar para ver que clientes tiene asociado un contenedor.")
 def status_cont(cont_id: int | None = None,
                 show_status: bool | None = True,
-                show_vigias: bool | None = True,  # Esto lo muestra solo si lo está viendo el dueño del cont
+                show_vigias: bool | None = False,
+                detailed_alarm: bool | None = False,
                 auth_result: str = Security(auth.verify)
                 ):
     status = requests.cont_status(cont_id)
@@ -87,6 +90,10 @@ def status_cont(cont_id: int | None = None,
         raise HTTPException(status_code=400, detail="No hay información para mostrar")
     clients = requests.cont_assigned(status["idvigia"])
     if show_status:
+        if detailed_alarm:
+            alarmaDetail = status["alarma"] if status["alarma"] else ["No hay alarmas."]
+        else:
+            alarmaDetail = ["Active detailed_alarm para ver los detalles."]
         contStatus = Container(
             cont_id=status["id"],
             name=status["name"],
@@ -94,12 +101,14 @@ def status_cont(cont_id: int | None = None,
             defrost=False if status["defrost"] is None else status["defrost"],
             arranque_comp=False if status["arranque_comp"] is None else status["arranque_comp"],
             bateria=False if status["bateria"] is None else status["bateria"],
-            alarma=status["alarma"],
+            alarma=True if status["alarma"] else False,
+            alarma_detail=alarmaDetail,
             defrost_status=status["defrost_status"],
         )
     else:
         contStatus = "No info"
     if clients:
+        # Ver como devolver la alarma detallada y la lista de usuarios asociados
         if show_vigias:
             # Vemos los permisos antes de devolver el estado. Solo debería devolverlo si lo está pidiendo el dueño
             # del container, o si es un usuario asignado a él.

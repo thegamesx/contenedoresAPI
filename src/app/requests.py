@@ -81,21 +81,22 @@ def cont_status(containerID):
         return -1
     else:
         status = data[0]
-        alarma = defrost = False
+        alarma = []
+        defrost = False
         if controller_status(status["date"]):
-            alarma = True
+            alarma.append("Más de una media hora sin actividad.")
         if status["defrost"]:
             defrost_status = check_hour_status(data, "defrost", True)
             if defrost_status:
-                alarma = True
+                alarma.append("El defrost está activado hace más de una hora.")
             else:
                 defrost = True
         if not status["arranque_comp"]:
             compresor_status = check_hour_status(data, "arranque_comp", True)
             if compresor_status:
-                alarma = True
+                alarma.append("El compresor está activado hace más de una hora.")
         if status["bateria"]:
-            alarma = True
+            alarma.append("La batería está activada, problemas de alimentación.")
         status["alarma"] = alarma
         status["defrost_status"] = defrost
         data, count = db_select("config", "*", "container_id", containerID)

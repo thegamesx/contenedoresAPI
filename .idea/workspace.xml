@@ -7,7 +7,6 @@
     <list default="true" id="26cf6396-54b6-4961-ae32-9550231989db" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/API.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/API.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/logic.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/logic.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/app/requests.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/requests.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -52,20 +51,20 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Docker.Container API.executor&quot;: &quot;Run&quot;,
-    &quot;Docker.Dockerfile.executor&quot;: &quot;Run&quot;,
-    &quot;Python.main.executor&quot;: &quot;Run&quot;,
-    &quot;Python.server (1).executor&quot;: &quot;Debug&quot;,
-    &quot;Python.server.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;advanced.settings&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Docker.Container API.executor": "Run",
+    "Docker.Dockerfile.executor": "Run",
+    "Python.main.executor": "Run",
+    "Python.server (1).executor": "Run",
+    "Python.server.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "master",
+    "ignore.virus.scanning.warn.message": "true",
+    "settings.editor.selected.configurable": "advanced.settings"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\Leandro\Documents\Proyectos Programación\contenedoresAPI\src" />
@@ -312,7 +311,15 @@
       <option name="project" value="LOCAL" />
       <updated>1716228603495</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="0.1.8&#10;&#10;El delete ya no borra el contenedor en si, solo sus señales y relaciones.">
+      <option name="closed" value="true" />
+      <created>1717681219244</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1717681219244</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -329,14 +336,15 @@
     <MESSAGE value="0.0.7&#10;&#10;Cambie la ubicación de varias cosas, separando la logica de los llamados a la DB. WIP." />
     <MESSAGE value="0.0.8" />
     <MESSAGE value="0.1.7&#10;&#10;Se cambiaron un par de señales, aunque hay que testearlas." />
-    <option name="LAST_COMMIT_MESSAGE" value="0.1.7&#10;&#10;Se cambiaron un par de señales, aunque hay que testearlas." />
+    <MESSAGE value="0.1.8&#10;&#10;El delete ya no borra el contenedor en si, solo sus señales y relaciones." />
+    <option name="LAST_COMMIT_MESSAGE" value="0.1.8&#10;&#10;El delete ya no borra el contenedor en si, solo sus señales y relaciones." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/app/requests.py</url>
-          <line>163</line>
+          <line>164</line>
           <option name="timeStamp" value="25" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -346,22 +354,22 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/app/requests.py</url>
-          <line>85</line>
+          <line>86</line>
           <option name="timeStamp" value="29" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/app/requests.py</url>
-          <line>89</line>
+          <line>90</line>
           <option name="timeStamp" value="30" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/app/requests.py</url>
-          <line>95</line>
+          <line>96</line>
           <option name="timeStamp" value="31" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/app/requests.py</url>
-          <line>97</line>
+          <line>98</line>
           <option name="timeStamp" value="37" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
