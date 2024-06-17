@@ -223,6 +223,7 @@ def get_status(
         user_id: str | None = None,
         return_status: bool | None = True,
         return_vigias: bool | None = False,
+        detailed_alarm: bool | None = False,
         auth_result: str = Security(auth.verify)
 ):
     if not return_status and not return_vigias:
@@ -238,6 +239,11 @@ def get_status(
         results = ContainerList()
     for i, container in enumerate(contStatus):
         if container != -1:
+            # TODO: Hacer todo lo siguiente una función
+            if detailed_alarm:
+                alarmaDetail = container["alarma"] if container["alarma"] else ["No hay alarmas."]
+            else:
+                alarmaDetail = ["Active detailed_alarm para ver los detalles."]
             currentContainer = Container(
                 cont_id=container["id"],
                 name=container["name"],
@@ -245,7 +251,8 @@ def get_status(
                 defrost=False if container["defrost"] is None else container["defrost"],
                 arranque_comp=False if container["arranque_comp"] is None else container["arranque_comp"],
                 bateria=False if container["bateria"] is None else container["bateria"],
-                alarma=container["alarma"],
+                alarma=True if container["alarma"] else False,
+                alarma_detail=alarmaDetail,
                 defrost_status=container["defrost_status"],
             )
             if return_vigias:
