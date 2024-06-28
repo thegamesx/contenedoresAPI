@@ -94,7 +94,7 @@ def cont_status(containerID):
         if not status["arranque_comp"]:
             compresor_status = check_hour_status(data, "arranque_comp", True)
             if compresor_status:
-                alarma.append("El compresor está activado hace más de una hora.")
+                alarma.append("El compresor está desactivado hace más de una hora.")
         if status["bateria"]:
             alarma.append("La batería está activada, problemas de alimentación.")
         status["alarma"] = alarma

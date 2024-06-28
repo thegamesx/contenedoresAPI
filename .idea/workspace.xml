@@ -6,7 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="26cf6396-54b6-4961-ae32-9550231989db" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/API.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/API.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/requests.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/requests.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -334,7 +334,15 @@
       <option name="project" value="LOCAL" />
       <updated>1718647926282</updated>
     </task>
-    <option name="localTasksCounter" value="20" />
+    <task id="LOCAL-00020" summary="0.1.9.2&#10;&#10;Se cambió un false a un true">
+      <option name="closed" value="true" />
+      <created>1719582272179</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1719582272179</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -365,7 +373,8 @@
     <MESSAGE value="0.1.8&#10;&#10;El delete ya no borra el contenedor en si, solo sus señales y relaciones." />
     <MESSAGE value="0.1.9&#10;&#10;Se agregaron detalles a las alarmas" />
     <MESSAGE value="0.1.9.1&#10;&#10;Se arregló un problema relacionado al commit anterior" />
-    <option name="LAST_COMMIT_MESSAGE" value="0.1.9.1&#10;&#10;Se arregló un problema relacionado al commit anterior" />
+    <MESSAGE value="0.1.9.2&#10;&#10;Se cambió un false a un true" />
+    <option name="LAST_COMMIT_MESSAGE" value="0.1.9.2&#10;&#10;Se cambió un false a un true" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -374,11 +383,6 @@
           <url>file://$PROJECT_DIR$/src/app/requests.py</url>
           <line>164</line>
           <option name="timeStamp" value="25" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/src/app/requests.py</url>
-          <line>82</line>
-          <option name="timeStamp" value="27" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/app/requests.py</url>
