@@ -1,19 +1,20 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 
 def convert_date(dateStr):
-    strippedDate = dateStr[:-6]
+    #strippedDate = dateStr[:-6]
     # Se incorporó este try para testear fechas ingresadas manualmente.
     try:
-        return datetime.strptime(strippedDate, "%Y-%m-%dT%H:%M:%S.%f")
+        return datetime.strptime(dateStr, "%Y-%m-%dT%H:%M:%S.%f%z")
     except:
-        return datetime.strptime(strippedDate, "%Y-%m-%dT%H:%M:%S")
+        return datetime.strptime(dateStr, "%Y-%m-%dT%H:%M:%S%z")
 
 
 # Verifica que el controlador este mandando señales. Si no mandó una por 35m devuelve un error
 def controller_status(lastSignal):
-    timeNow = datetime.now()
+    timeNow = datetime.now(timezone.utc)
     lastSignalDT = convert_date(lastSignal)
     timeDelta = timeNow - lastSignalDT
     print(timeNow,lastSignalDT,timeDelta)
