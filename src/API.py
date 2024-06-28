@@ -144,6 +144,8 @@ def delete_cont(
         auth_result: str = Security(auth.verify)
         # auth_result: str = Security(auth.verify, scopes=['mod:cont'])
 ):
+    # TODO: Este comando tiene que desvincular el usuario actual del contenedor. No puede eliminar el contenedor en
+    # su totalidad, ni desvincularlo de otros usuarios. No debería borrar sus señales tampoco entonces.
     if requests.check_ownership(auth_result["sub"], cont_id):
         if cont_id:
             results = requests.del_cont(cont_id)
@@ -223,7 +225,7 @@ def get_status(
         user_id: str | None = None,
         return_status: bool | None = True,
         return_vigias: bool | None = False,
-        detailed_alarm: bool | None = False,
+        detailed_alarm: bool | None = True,
         auth_result: str = Security(auth.verify)
 ):
     if not return_status and not return_vigias:

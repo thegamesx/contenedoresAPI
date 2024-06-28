@@ -326,7 +326,15 @@
       <option name="project" value="LOCAL" />
       <updated>1718112712215</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="0.1.9.1&#10;&#10;Se arregló un problema relacionado al commit anterior">
+      <option name="closed" value="true" />
+      <created>1718647926282</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1718647926282</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -356,7 +364,8 @@
     <MESSAGE value="0.1.7&#10;&#10;Se cambiaron un par de señales, aunque hay que testearlas." />
     <MESSAGE value="0.1.8&#10;&#10;El delete ya no borra el contenedor en si, solo sus señales y relaciones." />
     <MESSAGE value="0.1.9&#10;&#10;Se agregaron detalles a las alarmas" />
-    <option name="LAST_COMMIT_MESSAGE" value="0.1.9&#10;&#10;Se agregaron detalles a las alarmas" />
+    <MESSAGE value="0.1.9.1&#10;&#10;Se arregló un problema relacionado al commit anterior" />
+    <option name="LAST_COMMIT_MESSAGE" value="0.1.9.1&#10;&#10;Se arregló un problema relacionado al commit anterior" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -418,7 +427,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/API.py</url>
-          <line>239</line>
+          <line>241</line>
           <option name="timeStamp" value="46" />
         </line-breakpoint>
       </breakpoints>
