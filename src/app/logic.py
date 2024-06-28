@@ -14,11 +14,9 @@ def convert_date(dateStr):
 # Verifica que el controlador este mandando señales. Si no mandó una por 35m devuelve un error
 def controller_status(lastSignal):
     timeNow = datetime.now()
-    logging.info(timeNow)
     lastSignalDT = convert_date(lastSignal)
-    logging.info(lastSignalDT)
     timeDelta = timeNow - lastSignalDT
-    logging.info(timeDelta)
+    print(timeNow,lastSignalDT,timeDelta)
     if timeDelta.total_seconds() / 60 > 35:
         return True
     else:
