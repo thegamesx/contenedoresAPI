@@ -23,4 +23,4 @@ ARG SUPABASE_KEY
 ENV supabase_key $SUPABASE_KEY
 
 #
-CMD ["uvicorn", "API:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["fastapi", "run", "src/API.py", "--port", "8080"]

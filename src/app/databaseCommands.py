@@ -36,11 +36,19 @@ def db_update(table, updateDict, equalColumn, equalValue):
     return count[1]
 
 
+# TODO: Ver como hacer esto más prolijo, si es necesario.
 def db_delete(table, equalColumn, equalValue):
-    data, count = (db.table(table).
-                   delete(count='exact').
-                   eq(equalColumn, equalValue).
-                   execute())
+    if len(equalColumn) == 2 and len(equalValue) == 2:
+        data, count = (db.table(table).
+                       delete(count='exact').
+                       eq(equalColumn[0], equalValue[0]).
+                       eq(equalColumn[1], equalValue[1]).
+                       execute())
+    else:
+        data, count = (db.table(table).
+                       delete(count='exact').
+                       eq(equalColumn, equalValue).
+                       execute())
     return count[1]
 
 

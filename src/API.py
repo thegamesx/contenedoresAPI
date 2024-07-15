@@ -72,71 +72,8 @@ def create_cont(
     return {"status": "El contenedor fue creado con éxito.", "data": response}
 
 
-@app.get("/cont/status/{cont_id}", name="Estado contenedor", tags=["Container"],
-         description="Devuelve el estado de un contenedor especifico. Normalmente se usa el de clientes, "
-                     "pero si se necesita solo ver el estado de un contenedor especifico se puede usar este.\n"
-                     "Se puede usar el detailed_alarm para ver que alarmas saltan en especifico.\n"
-                     "También se puede usar para ver que clientes tiene asociado un contenedor.")
-def status_cont(cont_id: int | None = None,
-                show_status: bool | None = True,
-                show_vigias: bool | None = False,
-                detailed_alarm: bool | None = False,
-                auth_result: str = Security(auth.verify)
-                ):
-    status = requests.cont_status(cont_id)
-    if status == -1:
-        raise HTTPException(status_code=404, detail="No se encontró el contenedor")
-    if not show_status and not show_vigias:
-        raise HTTPException(status_code=400, detail="No hay información para mostrar")
-    clients = requests.cont_assigned(status["idvigia"])
-    if show_status:
-        if detailed_alarm:
-            alarmaDetail = status["alarma"] if status["alarma"] else ["No hay alarmas."]
-        else:
-            alarmaDetail = ["Active detailed_alarm para ver los detalles."]
-        contStatus = Container(
-            cont_id=status["id"],
-            name=status["name"],
-            temp=status["temp"],
-            defrost=False if status["defrost"] is None else status["defrost"],
-            arranque_comp=False if status["arranque_comp"] is None else status["arranque_comp"],
-            bateria=False if status["bateria"] is None else status["bateria"],
-            alarma=True if status["alarma"] else False,
-            alarma_detail=alarmaDetail,
-            defrost_status=status["defrost_status"],
-        )
-    else:
-        contStatus = "No info"
-    if clients:
-        # Ver como devolver la alarma detallada y la lista de usuarios asociados
-        if show_vigias:
-            # Vemos los permisos antes de devolver el estado. Solo debería devolverlo si lo está pidiendo el dueño
-            # del container, o si es un usuario asignado a él.
-            if requests.check_ownership(auth_result["sub"], cont_id):
-                clientList = []
-                for client in clients:
-                    clientList.append(Client(
-                        name=client["name"],
-                        id=client["user_id"]
-                    ))
-                if show_status:
-                    result = ContStatus(
-                        status=contStatus,
-                        clients=clientList
-                    )
-                else:
-                    result = clientList
-                return result
-            else:
-                raise HTTPException(status_code=403, detail="Solo el dueño pero ver los vigias asociados al contenedor")
-        else:
-            return contStatus
-    else:
-        return {"warning": "El contenedor no tiene clientes asociados", "status": contStatus}
-
-
 # Ver los permisos SSL en la db, actualmente no funciona este comando
-@app.delete("/cont/delete/{cont_id}", name="Eliminar contenedor", tags=["Container"],
+@app.delete("/cont/delete/{cont_id}", name="Desvincular contenedor", tags=["Container"],
             description="Elimina todas sus señales y relaciones de un contenedor.\n"
                         "Mucho cuidado usando esto. Solo se pueden eliminar los contenedores enlazados a su cuenta.")
 def delete_cont(
@@ -148,11 +85,11 @@ def delete_cont(
     # su totalidad, ni desvincularlo de otros usuarios. No debería borrar sus señales tampoco entonces.
     if requests.check_ownership(auth_result["sub"], cont_id):
         if cont_id:
-            results = requests.del_cont(cont_id)
-            if results[0] == 0 and results[1] == 0:
+            results = requests.unlink_cont(auth_result["sub"], cont_id)
+            if not results[0]:
                 raise HTTPException(status_code=404, detail="No se encontró el contenedor")
             else:
-                return {"associations_deleted": results[0], "signals_deleted": results[1]}
+                return {"association_deleted": results[0], "signals_deleted": results[1]}
         else:
             raise HTTPException(status_code=400, detail="No se ingresó un numero de contenedor")
     else:
@@ -304,7 +241,7 @@ def create_client(
 
 
 @app.get("/client/account/", name="Datos de la cuenta", tags=["Client"],
-         description="Se usa para verificar si un usuario existe y que permisos tiene (WIP).\n"
+         description="Se usa para verificar si un usuario existe.\n"
                      "Por defecto se usa el de la cuenta, pero se puede especificar uno si es necesario.")
 def check_client(
         auth_result: str = Security(auth.verify),
@@ -318,15 +255,67 @@ def check_client(
     return {"status": "El usuario existe", "name": response["name"]}
 
 
-# TEST: Comando para practicar la API
+# COMANDOS DE ADMIN
 
-@app.get("/public/")
-def public_message():
-    return {"message": "Si lees esto sos puto"}
+@app.get("/admin/status/{cont_id}", name="Estado contenedor", tags=["Admin"],
+         description="Devuelve el estado de un contenedor especifico. Exclusivo para admin, "
+                     "ya que se puede ver el estado de cualquier contenedor.\n"
+                     "Se puede usar el detailed_alarm para ver que alarmas saltan en especifico.\n"
+                     "También se puede usar para ver que clientes tiene asociado un contenedor.")
+def status_cont(cont_id: int | None = None,
+                show_status: bool | None = True,
+                show_vigias: bool | None = False,
+                detailed_alarm: bool | None = True,
+                auth_result: str = Security(auth.verify)
+                ):
+    status = requests.cont_status(cont_id)
+    if status == -1:
+        raise HTTPException(status_code=404, detail="No se encontró el contenedor")
+    if not show_status and not show_vigias:
+        raise HTTPException(status_code=400, detail="No hay información para mostrar")
+    clients = requests.cont_assigned(status["idvigia"])
+    if show_status:
+        if detailed_alarm:
+            alarmaDetail = status["alarma"] if status["alarma"] else ["No hay alarmas."]
+        else:
+            alarmaDetail = ["Active detailed_alarm para ver los detalles."]
+        contStatus = Container(
+            cont_id=status["id"],
+            name=status["name"],
+            temp=status["temp"],
+            defrost=False if status["defrost"] is None else status["defrost"],
+            arranque_comp=False if status["arranque_comp"] is None else status["arranque_comp"],
+            bateria=False if status["bateria"] is None else status["bateria"],
+            alarma=True if status["alarma"] else False,
+            alarma_detail=alarmaDetail,
+            defrost_status=status["defrost_status"],
+        )
+    else:
+        contStatus = "No info"
+    if clients:
+        # Ver como devolver la alarma detallada y la lista de usuarios asociados
+        if show_vigias:
+            # Vemos los permisos antes de devolver el estado. Solo debería devolverlo si lo está pidiendo el dueño
+            # del container, o si es un usuario asignado a él.
+            if requests.check_ownership(auth_result["sub"], cont_id):
+                clientList = []
+                for client in clients:
+                    clientList.append(Client(
+                        name=client["name"],
+                        id=client["user_id"]
+                    ))
+                if show_status:
+                    result = ContStatus(
+                        status=contStatus,
+                        clients=clientList
+                    )
+                else:
+                    result = clientList
+                return result
+            else:
+                raise HTTPException(status_code=403, detail="Solo el dueño pero ver los vigias asociados al contenedor")
+        else:
+            return contStatus
+    else:
+        return {"warning": "El contenedor no tiene clientes asociados", "status": contStatus}
 
-
-@app.get("/private/")
-def private_message(
-        auth_result: str = Security(auth.verify)
-):
-    return {"message": "Este mensaje es super privado y el que lo lee es super puto", "token": auth_result}

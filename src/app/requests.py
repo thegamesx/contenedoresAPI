@@ -1,16 +1,20 @@
-from datetime import datetime
 from .databaseCommands import db_select, db_insert, db_delete, db_update
 from .logic import controller_status, check_hour_status
 
 defrost_default = 60
 
 
-# Elimina un contenedor, incluyendo todas sus relaciones y señales.
-def del_cont(contID, delCont=False):
-    history_cleared = clear_history(contID)
-    relationsCount = db_delete("relation", "following_cont_id", contID)
-    configCount = False
-    return [relationsCount, history_cleared]
+# Desvincula un contenedor, eliminando las relaciones de un usuario a él. Si era el único usuario, también elimina
+# sus señales. TODO: Testear más a fondo
+def unlink_cont(userID, contID, delCont=False):
+    userTableID, count = db_select("client", "*", "user_id", userID)
+    unlinkCount = db_delete("relation", ["following_cont_id", "followed_user_id"], [contID, userTableID[0]["id"]])
+    data, remainingRelations = db_select("relation", "*", "following_cont_id", contID)
+    if remainingRelations == 0:
+        history_cleared = clear_history(contID)
+    else:
+        history_cleared = False
+    return [True if unlinkCount > 0 else False, history_cleared]
 
 
 # Limpia el historial de un contenedor. Usar en caso de error o cambios, porque el historial se va a purgar regularmente
