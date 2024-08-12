@@ -125,6 +125,7 @@ def update_cont(
         raise HTTPException(status_code=403, detail="Se debe ingresar el id de un contenedor.")
 
 
+# TODO: Agregar forma de cargar la configuración (ya sea una por defecto o custom)
 @app.post("/cont/link/", name="Vincular contenedor a un usuario", tags=["Container"],
           description="Vincula un contenedor a un usuario. Ambos deben existir para hacer esto.\n"
                       "En la base de datos está el id y la contraseña del contenedor. Deben ingresarse ambos "
@@ -151,7 +152,8 @@ def link_cont(
     return {"status": "Se vinculó el contenedor correctamente"}
 
 
-# TODO: Ver bien los errores
+# TODO: Hacer que no devuelva los vigias, ya no es necesario. Ademas debería devolver solo si hay alarmas (y cuales),
+# pero no todo el detalle. Eso se puede pedir de forma individual.
 @app.get("/client/status/", name="Estado contenedores de un cliente", tags=["Client"],
          description="Devuelve el estado de todos los contenedores de un cliente.\n"
                      "Por defecto devuelve los contenedores asociados al usuario registrado, pero se puede"
@@ -257,6 +259,9 @@ def check_client(
 
 # COMANDOS DE ADMIN
 
+# TODO: Cambiar esto para que sea un comando de usuario, y se utilice para ver el estado completo de un contenedor
+# en particular, asi esa info se entrega por demanda.
+# En este caso, no deberia ser necesario que devuelva los clientes vinculados. Podria poner un comando aparte para ello.
 @app.get("/admin/status/{cont_id}", name="Estado contenedor", tags=["Admin"],
          description="Devuelve el estado de un contenedor especifico. Exclusivo para admin, "
                      "ya que se puede ver el estado de cualquier contenedor.\n"

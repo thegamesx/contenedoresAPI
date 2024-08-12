@@ -1,7 +1,7 @@
 from .databaseCommands import db_select, db_insert, db_delete, db_update
 from .logic import controller_status, check_hour_status
 
-defrost_default = 60
+defrost_default = 60  # TODO: Eliminar luego
 
 
 # Desvincula un contenedor, eliminando las relaciones de un usuario a él. Si era el único usuario, también elimina
@@ -20,7 +20,7 @@ def unlink_cont(userID, contID, delCont=False):
 # Limpia el historial de un contenedor. Usar en caso de error o cambios, porque el historial se va a purgar regularmente
 # Mucho cuidado con usar este comando, ya que no reversible. Probablemente quede como comando administrativo.
 def clear_history(contID):
-    data, count = db_select("config", "signal_id", "container_id", contID)
+    data, count = db_select("vigia", "signal_id", "container_id", contID)
     signal = data[0]["signal_id"]
     count = db_delete("signals", "idvigia", signal)
     return count
@@ -32,7 +32,7 @@ def link_cont_to_client(contID, userID, owner=True):
     if count == 0:
         return -1
     followedUserID = data[0]["id"]
-    data, count = db_select("config", "*", "container_id", contID)
+    data, count = db_select("vigia", "*", "container_id", contID)
     if count == 0:
         return -2
     followingContID = data[0]["id"]
@@ -43,8 +43,7 @@ def link_cont_to_client(contID, userID, owner=True):
         return -3
     data, count = db_insert("relation", {
         "following_cont_id": followingContID,
-        "followed_user_id": followedUserID,
-        "ownership": owner
+        "followed_user_id": followedUserID,  # TODO: Agregar conf
     })
     return data
 
@@ -53,10 +52,10 @@ def link_cont_to_client(contID, userID, owner=True):
 # TODO: TESTEAR
 def new_cont(contID, name, password):
     # Primero nos fijamos si el contenedor ya existe
-    data, count = db_select("config", "*", "container_id", contID)
+    data, count = db_select("vigia", "*", "container_id", contID)
     if count > 0:
         return -1
-    data, count = db_insert("config", {
+    data, count = db_insert("vigia", {
         "container_id": contID,
         "display_name": name if name else "Sin nombre",
         "signal_id": contID,  # Ver si cambiar esto
@@ -68,7 +67,7 @@ def new_cont(contID, name, password):
 # Cambia el nombre de un contenedor
 # TODO: Testear
 def name_cont(contID, name):
-    count = db_update("config", {"display_name": name}, "container_id", contID)
+    count = db_update("vigia", {"display_name": name}, "container_id", contID)
     if count == 0:
         return 0
     elif count == 1:
@@ -78,7 +77,7 @@ def name_cont(contID, name):
 
 
 # Devuelve el estado de un contenedor en particular
-# TODO: Revisar y testear las señales
+# TODO: Tomar la conf del usuario para ver que señales revisar.
 def cont_status(containerID):
     data, count = db_select("signals", "*", "idvigia", containerID, setLimit=20)
     if count == 0:
@@ -103,7 +102,7 @@ def cont_status(containerID):
             alarma.append("La batería está activada, problemas de alimentación.")
         status["alarma"] = alarma
         status["defrost_status"] = defrost
-        data, count = db_select("config", "*", "container_id", containerID)
+        data, count = db_select("vigia", "*", "container_id", containerID)
         status["name"] = data[0]["display_name"]
         status["id"] = containerID
         return status
@@ -111,7 +110,7 @@ def cont_status(containerID):
 
 # Se fija que clientes están asignados a un contenedor en particular
 def cont_assigned(contID):
-    clients, count = db_select("config", "relation(*)", "container_id", contID)
+    clients, count = db_select("vigia", "relation(*)", "container_id", contID)
     clientList = []
     for client in clients:
         data, count = db_select("relation", "client(*)", "followed_user_id", client['followed_user_id'])
@@ -126,22 +125,21 @@ def status_cont_client(clientID):
         return -1
     all_cont_status = []
     for row in relation:
-        data, count = db_select("config", "*", "id", row["following_cont_id"])
+        data, count = db_select("vigia", "*", "id", row["following_cont_id"])
         status = cont_status(data[0]['signal_id'])
         all_cont_status.append(status)
     return all_cont_status
 
 
 # Verifica si el contenedor pertenece al usuario
-# TODO: Ver si es necesario mantener esto. Cambiaron las especificaciones.
+# TODO: Ver como hacer un join y resolver este problema con una sola llamada a la DB
 def check_ownership(clientID, contID):
     dataClient, count = db_select("client", "relation(*)", "user_id", clientID)
     for rowClient in dataClient:
-        dataCont, count2 = db_select("config", "relation(*)", "container_id", contID)
+        dataCont, count2 = db_select("vigia", "relation(*)", "container_id", contID)
         for rowCont in dataCont:
             if rowClient["following_cont_id"] == rowCont["following_cont_id"]:
-                if rowClient["ownership"]:
-                    return True
+                return True
     return False
 
 
@@ -165,7 +163,7 @@ def check_client_exists(clientID=None, username=None):
 
 
 def check_cont_password(contID, password):
-    data, count = db_select("config", "*", "container_id", contID)
+    data, count = db_select("vigia", "*", "container_id", contID)
     if count == 1:
         if data[0]['password'] == password:
             return True
