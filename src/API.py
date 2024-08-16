@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Query, Security
+from fastapi import FastAPI, HTTPException, Security
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import app.requests as requests
@@ -35,6 +35,14 @@ class Container(BaseModel):
     defrost_status: bool
 
 
+class ContainerAlarms(BaseModel):
+    cont_id: int
+    name: str
+    alarma: bool
+    alarma_detail: list[str] = []
+    defrost_status: bool
+
+
 class Client(BaseModel):
     name: str
     id: str
@@ -50,12 +58,13 @@ class ContStatus(BaseModel):
 
 
 class StatusList(BaseModel):
-    statusList: list[ContStatus] = []
+    statusList: list[ContainerAlarms] = []
 
 
 # API CALLS
 
 
+# TODO: Agregar forma de cargar la configuración (va a ser a nivel admin, el comando en general)
 @app.post("/cont/create/{cont_id}", name="Crear contenedor", tags=["Container"],
           description="Crea todas las relaciones de un contenedor. El comando no vincula a un usuario, y este  "
                       "se usa para ingresar los datos de nuevas placas. Luego se pueden vincular usuarios.\n")
@@ -67,12 +76,12 @@ def create_cont(
 ):
     # Vamos a crear el contenedor sin clientes asociados.
     response = requests.new_cont(cont_id, name, password)
-    if response == -1:
+    if not response:
         raise HTTPException(status_code=400, detail="El contenedor ingresado ya existe.")
     return {"status": "El contenedor fue creado con éxito.", "data": response}
 
 
-# Ver los permisos SSL en la db, actualmente no funciona este comando
+# TODO: Ver los permisos SSL en la db, actualmente no funciona este comando (ver si ya arreglé esto)
 @app.delete("/cont/delete/{cont_id}", name="Desvincular contenedor", tags=["Container"],
             description="Elimina todas sus señales y relaciones de un contenedor.\n"
                         "Mucho cuidado usando esto. Solo se pueden eliminar los contenedores enlazados a su cuenta.")
@@ -125,7 +134,6 @@ def update_cont(
         raise HTTPException(status_code=403, detail="Se debe ingresar el id de un contenedor.")
 
 
-# TODO: Agregar forma de cargar la configuración (ya sea una por defecto o custom)
 @app.post("/cont/link/", name="Vincular contenedor a un usuario", tags=["Container"],
           description="Vincula un contenedor a un usuario. Ambos deben existir para hacer esto.\n"
                       "En la base de datos está el id y la contraseña del contenedor. Deben ingresarse ambos "
@@ -152,8 +160,6 @@ def link_cont(
     return {"status": "Se vinculó el contenedor correctamente"}
 
 
-# TODO: Hacer que no devuelva los vigias, ya no es necesario. Ademas debería devolver solo si hay alarmas (y cuales),
-# pero no todo el detalle. Eso se puede pedir de forma individual.
 @app.get("/client/status/", name="Estado contenedores de un cliente", tags=["Client"],
          description="Devuelve el estado de todos los contenedores de un cliente.\n"
                      "Por defecto devuelve los contenedores asociados al usuario registrado, pero se puede"
@@ -162,57 +168,25 @@ def link_cont(
                      "mostrar su estado si es necesario.")
 def get_status(
         user_id: str | None = None,
-        return_status: bool | None = True,
-        return_vigias: bool | None = False,
-        detailed_alarm: bool | None = True,
         auth_result: str = Security(auth.verify)
 ):
-    if not return_status and not return_vigias:
-        raise HTTPException(status_code=400, detail="No hay información para mostrar.")
     # Si se ingresa un usuario específico va a tener prioridad este,
     # si no se usa el usuario de la cuenta que hace el request
-    contStatus = requests.status_cont_client(user_id if user_id else auth_result["sub"])
-    if contStatus == -1:
+    response = requests.status_cont_client(user_id if user_id else auth_result["sub"])
+    if not response:
         raise HTTPException(status_code=404, detail="No se encontró el cliente.")
-    if return_vigias:
-        results = StatusList()
-    else:
-        results = ContainerList()
-    for i, container in enumerate(contStatus):
-        if container != -1:
-            # TODO: Hacer todo lo siguiente una función
-            if detailed_alarm:
-                alarmaDetail = container["alarma"] if container["alarma"] else ["No hay alarmas."]
-            else:
-                alarmaDetail = ["Active detailed_alarm para ver los detalles."]
-            currentContainer = Container(
-                cont_id=container["id"],
-                name=container["name"],
-                temp=container["temp"],
-                defrost=False if container["defrost"] is None else container["defrost"],
-                arranque_comp=False if container["arranque_comp"] is None else container["arranque_comp"],
-                bateria=False if container["bateria"] is None else container["bateria"],
-                alarma=True if container["alarma"] else False,
-                alarma_detail=alarmaDetail,
-                defrost_status=container["defrost_status"],
-            )
-            if return_vigias:
-                clients = requests.cont_assigned(container["idvigia"])
-                clientList = []
-                for client in clients:
-                    clientList.append(Client(
-                        name=client["name"],
-                        id=client["user_id"]
-                    ))
-                contWithVigias = ContStatus(
-                    status=currentContainer,
-                    clients=clientList
-                )
-                results.statusList.append(contWithVigias)
-            else:
-                results.contList.append(currentContainer)
-    if contStatus:
-        return {"status": results}
+    results = StatusList()
+    for i, container in enumerate(response):
+        currentContainer = ContainerAlarms(
+            cont_id=container["id"],
+            name=container["name"],
+            alarma=True if container["alarmList"] else False,
+            alarma_detail=container["alarmList"],
+            defrost_status=container["defrostStatus"],
+        )
+        results.statusList.append(currentContainer)
+    if response:
+        return results
     else:
         raise HTTPException(status_code=404, detail="No hay contenedores asignados al usuario.")
 
@@ -256,8 +230,6 @@ def check_client(
     # Ver como devolver los permisos
     return {"status": "El usuario existe", "name": response["name"]}
 
-
-# COMANDOS DE ADMIN
 
 # TODO: Cambiar esto para que sea un comando de usuario, y se utilice para ver el estado completo de un contenedor
 # en particular, asi esa info se entrega por demanda.
@@ -324,3 +296,4 @@ def status_cont(cont_id: int | None = None,
     else:
         return {"warning": "El contenedor no tiene clientes asociados", "status": contStatus}
 
+# COMANDOS DE ADMIN

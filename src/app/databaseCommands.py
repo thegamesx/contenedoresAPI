@@ -57,3 +57,12 @@ def db_insert(table, dataDict):
                    insert(dataDict).
                    execute())
     return data, count[1]
+
+
+def db_check_relation(clientID, contID):
+    data, count = (db.table("vigia").
+                   select("container_id,client(user_id)", count='exact').
+                   eq("container_id", contID).
+                   eq("client.user_id", clientID).
+                   execute())
+    return count[1]

@@ -10,11 +10,11 @@ def convert_date(dateStr):
 
 
 # Verifica que el controlador este mandando señales. Si no mandó una por 35m devuelve un error
-def controller_status(lastSignal):
+def controller_status(lastSignal, inactivityTime=35):
     timeNow = datetime.now(timezone.utc)
     lastSignalDT = convert_date(lastSignal)
     timeDelta = timeNow - lastSignalDT
-    if timeDelta.total_seconds() / 60 > 35:
+    if timeDelta.total_seconds() / 60 > inactivityTime:
         return True
     else:
         return False
@@ -22,7 +22,7 @@ def controller_status(lastSignal):
 
 # Comprueba si el defrost o el compresor está en un estado normal. De no ser así, se activa una alarma
 # Se manda el campo a checkear en field, y la condición normal en checkIfTrue, ya que son opuestas
-def check_hour_status(data, field, checkIfTrue):
+def check_hour_status(data, field, checkIfTrue, timer):
     timeNow = datetime.now(timezone.utc)
     # TODO: Ver si esto funciona correctamente
     for row in data:
@@ -30,5 +30,5 @@ def check_hour_status(data, field, checkIfTrue):
             return False
         registeredDate = convert_date(row["date"])
         timeDelta = timeNow - registeredDate
-        if timeDelta.total_seconds() / 60 > 60:
+        if timeDelta.total_seconds() / 60 > timer:
             return True
