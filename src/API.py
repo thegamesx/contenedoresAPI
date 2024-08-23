@@ -64,23 +64,6 @@ class StatusList(BaseModel):
 # API CALLS
 
 
-# TODO: Agregar forma de cargar la configuración (va a ser a nivel admin, el comando en general)
-@app.post("/cont/create/{cont_id}", name="Crear contenedor", tags=["Container"],
-          description="Crea todas las relaciones de un contenedor. El comando no vincula a un usuario, y este  "
-                      "se usa para ingresar los datos de nuevas placas. Luego se pueden vincular usuarios.\n")
-def create_cont(
-        cont_id: int,
-        password: str,
-        name: str | None = None,
-        auth_result: str = Security(auth.verify)  # Debería tener scope de admin
-):
-    # Vamos a crear el contenedor sin clientes asociados.
-    response = requests.new_cont(cont_id, name, password)
-    if not response:
-        raise HTTPException(status_code=400, detail="El contenedor ingresado ya existe.")
-    return {"status": "El contenedor fue creado con éxito.", "data": response}
-
-
 # TODO: Ver los permisos SSL en la db, actualmente no funciona este comando (ver si ya arreglé esto)
 @app.delete("/cont/delete/{cont_id}", name="Desvincular contenedor", tags=["Container"],
             description="Elimina todas sus señales y relaciones de un contenedor.\n"
@@ -180,9 +163,9 @@ def get_status(
         currentContainer = ContainerAlarms(
             cont_id=container["id"],
             name=container["name"],
-            alarma=True if container["alarmList"] else False,
-            alarma_detail=container["alarmList"],
-            defrost_status=container["defrostStatus"],
+            alarma=True if container["alarm_list"] else False,
+            alarma_detail=container["alarm_list"],
+            defrost_status=container["defrost_status"],
         )
         results.statusList.append(currentContainer)
     if response:
@@ -234,28 +217,18 @@ def check_client(
 # TODO: Cambiar esto para que sea un comando de usuario, y se utilice para ver el estado completo de un contenedor
 # en particular, asi esa info se entrega por demanda.
 # En este caso, no deberia ser necesario que devuelva los clientes vinculados. Podria poner un comando aparte para ello.
-@app.get("/admin/status/{cont_id}", name="Estado contenedor", tags=["Admin"],
-         description="Devuelve el estado de un contenedor especifico. Exclusivo para admin, "
-                     "ya que se puede ver el estado de cualquier contenedor.\n"
-                     "Se puede usar el detailed_alarm para ver que alarmas saltan en especifico.\n"
-                     "También se puede usar para ver que clientes tiene asociado un contenedor.")
+@app.get("/admin/status/{cont_id}", name="Estado contenedor", tags=["Container"],
+         description="Devuelve el estado de un contenedor especifico. Solo devuelve el estado "
+                     "de los contenedores pertenecientes al usuario.\n"
+                     "Se puede usar el detailed_alarm para ver que alarmas saltan en especifico.")
 def status_cont(cont_id: int | None = None,
-                show_status: bool | None = True,
-                show_vigias: bool | None = False,
                 detailed_alarm: bool | None = True,
                 auth_result: str = Security(auth.verify)
                 ):
-    status = requests.cont_status(cont_id)
-    if status == -1:
-        raise HTTPException(status_code=404, detail="No se encontró el contenedor")
-    if not show_status and not show_vigias:
-        raise HTTPException(status_code=400, detail="No hay información para mostrar")
-    clients = requests.cont_assigned(status["idvigia"])
-    if show_status:
-        if detailed_alarm:
-            alarmaDetail = status["alarma"] if status["alarma"] else ["No hay alarmas."]
-        else:
-            alarmaDetail = ["Active detailed_alarm para ver los detalles."]
+    if requests.check_ownership(auth_result["sub"],cont_id):
+        status = requests.cont_status(cont_id, detail=True)
+        if "error" in status:
+            raise HTTPException(status_code=404, detail=status["error"])
         contStatus = Container(
             cont_id=status["id"],
             name=status["name"],
@@ -263,37 +236,29 @@ def status_cont(cont_id: int | None = None,
             defrost=False if status["defrost"] is None else status["defrost"],
             arranque_comp=False if status["arranque_comp"] is None else status["arranque_comp"],
             bateria=False if status["bateria"] is None else status["bateria"],
-            alarma=True if status["alarma"] else False,
-            alarma_detail=alarmaDetail,
+            alarma=True if status["alarm_list"] else False,
+            alarma_detail=status["alarm_list"] if detailed_alarm else None,
             defrost_status=status["defrost_status"],
         )
+        return contStatus
     else:
-        contStatus = "No info"
-    if clients:
-        # Ver como devolver la alarma detallada y la lista de usuarios asociados
-        if show_vigias:
-            # Vemos los permisos antes de devolver el estado. Solo debería devolverlo si lo está pidiendo el dueño
-            # del container, o si es un usuario asignado a él.
-            if requests.check_ownership(auth_result["sub"], cont_id):
-                clientList = []
-                for client in clients:
-                    clientList.append(Client(
-                        name=client["name"],
-                        id=client["user_id"]
-                    ))
-                if show_status:
-                    result = ContStatus(
-                        status=contStatus,
-                        clients=clientList
-                    )
-                else:
-                    result = clientList
-                return result
-            else:
-                raise HTTPException(status_code=403, detail="Solo el dueño pero ver los vigias asociados al contenedor")
-        else:
-            return contStatus
-    else:
-        return {"warning": "El contenedor no tiene clientes asociados", "status": contStatus}
+        raise HTTPException(status_code=403, detail="Solo el dueño pero ver el estado de su contenedor.")
 
 # COMANDOS DE ADMIN
+
+# TODO: Configurar que solo tenga permiso de ejecución de Admin
+@app.post("/cont/create/{cont_id}", name="Crear contenedor", tags=["Admin"],
+          description="Crea todas las relaciones de un contenedor. El comando no vincula a un usuario, y este  "
+                      "se usa para ingresar los datos de nuevas placas. Luego se pueden vincular usuarios.\n")
+def create_cont(
+        cont_id: int,
+        password: str,
+        name: str | None = None,
+        configName: str | None = "default",
+        auth_result: str = Security(auth.verify)  # Debería tener scope de admin
+):
+    # Vamos a crear el contenedor sin clientes asociados.
+    response = requests.new_cont(cont_id, name, password, configName)
+    if "error" in response:
+        raise HTTPException(status_code=400, detail=response["error"])
+    return {"status": "El contenedor fue creado con éxito.", "data": response}

@@ -1,4 +1,4 @@
-from .databaseCommands import db_select, db_insert, db_delete, db_update, db_check_relation
+from .databaseCommands import *
 from .logic import controller_status, check_hour_status
 
 
@@ -46,15 +46,21 @@ def link_cont_to_client(contID, userID, owner=True):
 
 # Ingresa un contenedor al sistema, creando todas las relaciones necesarias.
 # TODO: TESTEAR
-def new_cont(contID, name, password):
+def new_cont(contID, name, password, config):
     # Primero nos fijamos si el contenedor ya existe
     data, count = db_select("vigia", "*", "container_id", contID)
     if count > 0:
-        return False
+        return {"error": "El contenedor ingresado ya existe."}
+    data, count = db_select("config", "id", "config_name", config)
+    if count == 1:
+        configID = data[0]["id"]
+    else:
+        return {"error": "No existe la configuración ingresada."}
     data, count = db_insert("vigia", {
         "container_id": contID,
         "display_name": name if name else "Sin nombre",
-        "password": password
+        "password": password,
+        "config_id": configID
     })
     return data
 
@@ -72,20 +78,35 @@ def name_cont(contID, name):
 
 
 # Devuelve el estado de un contenedor en particular
-# TODO: Tomar la conf del usuario para ver que señales revisar. Y solo devolver el estado de las alarmas, no todo el dispositivo.
 def cont_status(containerID, detail=False):
     # TODO: Ver si el limite = 20 es adecuado, podría ser menos
-    data, count = db_select("vigia", "display_name, signals(*), config(*)", "container_id", containerID, setLimit=20)
-    if not data[0]['signals']:
-        return {
-            "name": data[0]["display_name"],
-            "id": containerID,
-            "alarmList": ["No hay señales"],
-            "defrostStatus": False,
-        }
+    data, count = db_fetch_signals(containerID)
+    if count == 0:
+        return {"error": "No se encontró el contenedor."}
+    if len(data['signals']) == 0:
+        if detail:
+            return {
+                "id": containerID,
+                "name": data["display_name"],
+                "temp": 999,
+                "bateria": None,
+                "defrost": None,
+                "compresor": None,
+                "evaporacion": None,
+                "arranque_comp": None,
+                "alarm_list": ["No hay señales"],
+                "defrost_status": False,
+            }
+        else:
+            return {
+                "name": data["display_name"],
+                "id": containerID,
+                "alarm_list": ["No hay señales"],
+                "defrost_status": False,
+            }
     else:
-        signals = data[0]["signals"]
-        config = data[0]["config"]
+        signals = data["signals"]
+        config = data["config"]
         alarma = []
         defrost = False
         if controller_status(signals[0]["date"], config["inactivity_time"]):
@@ -103,14 +124,18 @@ def cont_status(containerID, detail=False):
         if signals[0]["bateria"] and config["check_power"]:
             alarma.append("La batería está activada, problemas de alimentación.")
         if detail:
-            # TODO: Devolver el detalle completo
-            pass
+            lastSignal = signals[0]
+            lastSignal["defrost_status"] = defrost
+            lastSignal["name"] = data["display_name"]
+            lastSignal["id"] = containerID
+            lastSignal["alarm_list"] = alarma
+            return lastSignal
         else:
             return {
-                "name": data[0]["display_name"],
+                "name": data["display_name"],
                 "id": containerID,
-                "alarmList": alarma,
-                "defrostStatus": defrost,
+                "alarm_list": alarma,
+                "defrost_status": defrost,
             }
 
 
