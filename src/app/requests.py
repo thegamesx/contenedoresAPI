@@ -28,7 +28,7 @@ def link_cont_to_client(contID, userID, owner=True):
     if count == 0:
         return -1
     followedUserID = data[0]["id"]
-    data, count = db_select("vigia", "id", "container_id", contID)
+    data, count = db_select("vigia", "id", "id", contID)
     if count == 0:
         return -2
     followingContID = data[0]["id"]
@@ -46,18 +46,13 @@ def link_cont_to_client(contID, userID, owner=True):
 
 # Ingresa un contenedor al sistema, creando todas las relaciones necesarias.
 # TODO: TESTEAR
-def new_cont(contID, name, password, config):
-    # Primero nos fijamos si el contenedor ya existe
-    data, count = db_select("vigia", "*", "container_id", contID)
-    if count > 0:
-        return {"error": "El contenedor ingresado ya existe."}
+def new_cont(name, password, config):
     data, count = db_select("config", "id", "config_name", config)
     if count == 1:
         configID = data[0]["id"]
     else:
         return {"error": "No existe la configuración ingresada."}
     data, count = db_insert("vigia", {
-        "container_id": contID,
         "display_name": name if name else "Sin nombre",
         "password": password,
         "config_id": configID
@@ -68,7 +63,7 @@ def new_cont(contID, name, password, config):
 # Cambia el nombre de un contenedor
 # TODO: Testear
 def name_cont(contID, name):
-    count = db_update("vigia", {"display_name": name}, "container_id", contID)
+    count = db_update("vigia", {"display_name": name}, "id", contID)
     if count == 0:
         return 0
     elif count == 1:
@@ -141,7 +136,7 @@ def cont_status(containerID, detail=False):
 
 # Se fija que clientes están asignados a un contenedor en particular
 def cont_assigned(contID):
-    clients, count = db_select("vigia", "vigia_client(*)", "container_id", contID)
+    clients, count = db_select("vigia", "vigia_client(*)", "id", contID)
     clientList = []
     for client in clients:
         data, count = db_select("vigia_client", "client(*)", "followed_user_id", client['followed_user_id'])
@@ -151,13 +146,13 @@ def cont_assigned(contID):
 
 # Devuelve el estado de todos los contenedores asignados a una cuenta
 def status_cont_client(clientID):
-    contIDList, count = db_select("client", "vigia(container_id)", "user_id", clientID)
+    contIDList, count = db_select("client", "vigia(id)", "user_id", clientID)
     if count == 0:
         # TODO: Testear esto
         return False
     all_cont_status = []
     for contID in contIDList[0]['vigia']:
-        status = cont_status(contID['container_id'])
+        status = cont_status(contID['id'])
         all_cont_status.append(status)
     return all_cont_status
 
@@ -191,7 +186,7 @@ def check_client_exists(clientID=None, username=None):
 
 
 def check_cont_password(contID, password):
-    data, count = db_select("vigia", "password", "container_id", contID)
+    data, count = db_select("vigia", "password", "id", contID)
     if count == 1:
         if data[0]['password'] == password:
             return True

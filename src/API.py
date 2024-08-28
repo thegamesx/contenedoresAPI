@@ -146,9 +146,9 @@ def link_cont(
 @app.get("/client/status/", name="Estado contenedores de un cliente", tags=["Client"],
          description="Devuelve el estado de todos los contenedores de un cliente.\n"
                      "Por defecto devuelve los contenedores asociados al usuario registrado, pero se puede"
-                     "especificar uno diferente. Si se hace, ese va a tener prioridad.\n"
-                     "También puede devolver los vigias asociados a cada contenedor. En ese caso se puede desactivar "
-                     "mostrar su estado si es necesario.")
+                     "especificar uno diferente.\n"
+                     "Este comando solo devuelve las alarmas (si las hay) y los nombres de los contenedores. Usar "
+                     "/cont/status para devolver el estado completo de un contenedor en particular.")
 def get_status(
         user_id: str | None = None,
         auth_result: str = Security(auth.verify)
@@ -217,7 +217,7 @@ def check_client(
 # TODO: Cambiar esto para que sea un comando de usuario, y se utilice para ver el estado completo de un contenedor
 # en particular, asi esa info se entrega por demanda.
 # En este caso, no deberia ser necesario que devuelva los clientes vinculados. Podria poner un comando aparte para ello.
-@app.get("/admin/status/{cont_id}", name="Estado contenedor", tags=["Container"],
+@app.get("/cont/status/{cont_id}", name="Estado contenedor", tags=["Container"],
          description="Devuelve el estado de un contenedor especifico. Solo devuelve el estado "
                      "de los contenedores pertenecientes al usuario.\n"
                      "Se puede usar el detailed_alarm para ver que alarmas saltan en especifico.")
@@ -247,18 +247,20 @@ def status_cont(cont_id: int | None = None,
 # COMANDOS DE ADMIN
 
 # TODO: Configurar que solo tenga permiso de ejecución de Admin
-@app.post("/cont/create/{cont_id}", name="Crear contenedor", tags=["Admin"],
+@app.post("/cont/create/", name="Crear contenedor", tags=["Admin"],
           description="Crea todas las relaciones de un contenedor. El comando no vincula a un usuario, y este  "
                       "se usa para ingresar los datos de nuevas placas. Luego se pueden vincular usuarios.\n")
 def create_cont(
-        cont_id: int,
         password: str,
         name: str | None = None,
-        configName: str | None = "default",
+        config_name: str | None = "default",
         auth_result: str = Security(auth.verify)  # Debería tener scope de admin
 ):
     # Vamos a crear el contenedor sin clientes asociados.
-    response = requests.new_cont(cont_id, name, password, configName)
-    if "error" in response:
-        raise HTTPException(status_code=400, detail=response["error"])
+    if password:
+        response = requests.new_cont(name, password, config_name)
+        if "error" in response:
+            raise HTTPException(status_code=400, detail=response["error"])
+    else:
+        raise HTTPException(status_code=400, detail={"error": "La contraseña no puede estar vacia."})
     return {"status": "El contenedor fue creado con éxito.", "data": response}

@@ -62,7 +62,7 @@ def db_insert(table, dataDict):
 def db_check_relation(clientID, contID):
     data, count = (db.table("vigia").
                    select("client(user_id)", count='exact').
-                   eq("container_id", contID).
+                   eq("id", contID).
                    eq("client.user_id", clientID).
                    execute())
     # Ver si devolver más datos, o con esto es suficiente
@@ -77,6 +77,6 @@ def db_fetch_signals(contID):
                    select("display_name, signals(*), config(*)", count='exact').
                    order("id", desc=True, foreign_table="signals").
                    limit(20, foreign_table="signals").
-                   eq("container_id", contID).
+                   eq("id", contID).
                    execute())
     return data[1][0], count[1]
